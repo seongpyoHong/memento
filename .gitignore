@@ -31,6 +31,5 @@ out/
 ### VS Code ###
 .vscode/
 
-
-#### image ###
 memento/images/
+images/
