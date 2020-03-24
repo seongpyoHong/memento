@@ -1,0 +1,18 @@
+{
+  "name": "Typed URL History",
+  "version": "1.2",
+  "description": "Reads your history, and shows the top ten pages you go to by typing the URL.",
+  "permissions": [
+    "history"
+  ],
+  "browser_action": {
+    "default_popup": "collectorUrl.html",
+    "default_icon": "images/past1.png"
+  },
+  "icons": {
+    "16": "images/past1.png",
+    "48": "images/past2.png",
+    "128": "images/past3.png"
+  },
+  "manifest_version": 2
+}
