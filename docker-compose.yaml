@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  mongo:
+    container_name: mongo
+    image: mongo:3.4.2
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=memento
+      - MONGO_INITDB_ROOT_PASSWORD=memento
+    ports:
+      - "27017:27017"
