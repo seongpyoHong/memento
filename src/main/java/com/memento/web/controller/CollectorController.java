@@ -6,12 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 public class CollectorController {
 
     @Autowired
     private CollectorService collectorService;
+
     @PostMapping("/collector")
     public void collectHistory(@RequestBody HistoryRequestDto historyRequestDto) {
         collectorService.saveHistory(historyRequestDto);

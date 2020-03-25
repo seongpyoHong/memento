@@ -17,11 +17,12 @@ public class History {
     private String id;
 
     private String url;
-
+    private String keyword;
     @Builder
-    public History(String id, String url) {
+    public History(String id, String url, String keyword) {
         this.id = id;
         this.url = url;
+        this.keyword = keyword;
     }
 //    private Date visitedDate;
 }
