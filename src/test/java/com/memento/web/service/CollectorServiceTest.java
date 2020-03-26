@@ -37,7 +37,7 @@ class CollectorServiceTest {
 
         //given
         String keyword = "search ing";
-        TransitionType type = TransitionType.LINK;
+        String type = TransitionType.LINK.getName();
         Long unixTime = 1585225091L;
         HistoryRequestDto requestDto = new HistoryRequestDto(URL1, type, unixTime);
         //when
@@ -46,7 +46,7 @@ class CollectorServiceTest {
         //then
         History savedResult = Objects.requireNonNull(result.block());
         assertEquals(URL1, savedResult.getUrl());
-        assertEquals(type.getName(), savedResult.getType());
+        assertEquals(type, savedResult.getType());
         assertEquals(new Date(unixTime * 1000),savedResult.getVisitTime());
         assertEquals(keyword, savedResult.getKeyword());
         System.out.println(savedResult.toString());

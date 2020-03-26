@@ -21,7 +21,7 @@ public class CollectorService {
 
     public Mono<History> saveHistory(HistoryRequestDto historyRequestDto) {
         String url = historyRequestDto.getUrl();
-        String type = historyRequestDto.getType().getName();
+        String type = historyRequestDto.getType();
         String keyword = getKeyword(url);
         Date visitTime = convertToDate(historyRequestDto.getVisitTime());
 

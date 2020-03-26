@@ -1,4 +1,3 @@
-////    "scripts": ["background2.js"]
 document.addEventListener('DOMContentLoaded', function() {
     var clicklistener = document.getElementById('btnStartWorker');
     // onClick's logic below:
