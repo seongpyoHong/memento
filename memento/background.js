@@ -1,7 +1,35 @@
-// 호출한 페이지에 1씩 증가시킨 i를 1초마다 전달한다.
-setInterval( function() {
-    buildTypedUrlList();
-}, 3000 );
+chrome.extension.onConnect.addListener(function(port) {
+    console.log("Connected .....");
+    port.onMessage.addListener(function(msg) {
+        console.log("message recieved " + msg);
+        if (msg == 'On') {
+            console.log('워커 시작');
+            startWorker();
+        }
+        else if (msg == 'Off'){
+            console.log('워커 종료');
+            stopWorker();
+        }
+    });
+});
+
+var interval;
+function startWorker() {
+    if (!interval){
+        console.log('start 실행중인 인터벌 종료');
+        clearInterval(interval);
+    }
+    interval = setInterval( function() {
+        buildTypedUrlList();
+    }, 3000 );
+}
+
+function stopWorker() {
+    if(interval){
+        console.log('stop 실행중인 인터벌 종료');
+        clearInterval(interval);
+    }
+}
 
 function onAnchorClick(event) {
     chrome.tabs.create({
