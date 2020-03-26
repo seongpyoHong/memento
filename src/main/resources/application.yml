@@ -1,0 +1,9 @@
+spring:
+  data:
+    mongodb:
+      database: memento
+      username: memento
+      password: memento
+      host: localhost
+      authentication-database: admin
+      port: 27017
