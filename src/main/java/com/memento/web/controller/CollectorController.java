@@ -14,7 +14,7 @@ public class CollectorController {
     @Autowired
     private CollectorService collectorService;
 
-    @PostMapping("/collector")
+    @PostMapping("/collect")
     public void collectHistory(@RequestBody HistoryRequestDto historyRequestDto) {
         collectorService.saveHistory(historyRequestDto);
     }

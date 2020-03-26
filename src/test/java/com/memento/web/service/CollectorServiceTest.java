@@ -12,6 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collector;
 
@@ -35,16 +36,20 @@ class CollectorServiceTest {
     void 데이터_저장_테스트() {
 
         //given
+        String keyword = "search ing";
         TransitionType type = TransitionType.LINK;
-        HistoryRequestDto requestDto = new HistoryRequestDto(URL1, type);
-
+        Long unixTime = 1585225091L;
+        HistoryRequestDto requestDto = new HistoryRequestDto(URL1, type, unixTime);
         //when
-        Mono<String> result = collectorService.saveHistory(requestDto);
+        Mono<History> result = collectorService.saveHistory(requestDto);
 
         //then
-        Flux<History> findResult = historyRepository.findAll();
-        assertEquals(URL1, Objects.requireNonNull(findResult.blockFirst()).getUrl());
-        assertEquals(URL1,result.block());
+        History savedResult = Objects.requireNonNull(result.block());
+        assertEquals(URL1, savedResult.getUrl());
+        assertEquals(type.getName(), savedResult.getType());
+        assertEquals(new Date(unixTime * 1000),savedResult.getVisitTime());
+        assertEquals(keyword, savedResult.getKeyword());
+        System.out.println(savedResult.toString());
     }
 
     @Test

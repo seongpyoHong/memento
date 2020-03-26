@@ -13,4 +13,5 @@ import lombok.Setter;
 public class HistoryRequestDto {
     private String url;
     private TransitionType type;
+    private Long visitTime;
 }
