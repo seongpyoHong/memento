@@ -31,13 +31,13 @@ function stopWorker() {
     }
 }
 
-function onAnchorClick(event) {
-    chrome.tabs.create({
-        selected: true,
-        url: event.srcElement.href
-    });
-    return false;
-}
+// function onAnchorClick(event) {
+//     chrome.tabs.create({
+//         selected: true,
+//         url: event.srcElement.href
+//     });
+//     return false;
+// }
 
 
 // 기록을 검색하여 사용자가 입력한 링크를 최대 10개 찾아 팝업으로 표시
@@ -55,30 +55,35 @@ function buildTypedUrlList() {
     },
         function(historyItems) {
         // 각각의 히스토리로부터 모든 방문 세부사항을 얻음
+            let data = [];
             for (var i = 0; i < historyItems.length; ++i) {
                 let title = historyItems[i].title;
                 let lastVisitTime = historyItems[i].lastVisitTime;
                 let visitCount = historyItems[i].visitCount;
-                let url = historyItems[i].url;
+                let userUrl = historyItems[i].url;
 
                 console.log('----------------------------');
                 console.log(title);
                 console.log(lastVisitTime);
                 console.log(visitCount);
-                console.log(url);
+                console.log(userUrl);
                 console.log('----------------------------');
                 // let processVisitsWithUrl = function(url) {
                 //     return function(visitItems) {
                 //         processVisits(url, visitItems);
                 //         };
                 // };
-        
-                // getVisits callback -> processVisitsWithUrl
-                //chrome.history.getVisits({url: url}, processVisitsWithUrl(url));
+                let datasnippet = {
+                    title: title,
+                    lastVisitTime: lastVisitTime,
+                    visitCount: visitCount,
+                    userUrl: userUrl
+                }
+                data.push(datasnippet);
                 numRequestsOutstanding++; // 히스토리 개수
             }
-            if (!numRequestsOutstanding) {
-                //onAllVisitsProcessed();
+            if (numRequestsOutstanding) {
+                sendPost(data);
             }}
     );
 
@@ -101,4 +106,12 @@ function buildTypedUrlList() {
     // };
 
     // 디스플레이 할 최종 url 리스트가 있을 경우 호출됨
+}
+
+function sendPost(data) {
+    console.log(JSON.stringify(data));
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", 'http://localhost:8080', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify(data));
 }
