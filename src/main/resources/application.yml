@@ -1,9 +1,18 @@
 spring:
   data:
     mongodb:
-      database: memento
+      host: localhost
+      port: 27017
+      authentication-database: admin
+      database: mementoDB
       username: memento
       password: memento
-      host: localhost
-      authentication-database: admin
-      port: 27017
+  redis:
+    host: localhost
+    port: 6379
+  session:
+    timeout: 600
+    store-type: redis
+    redis:
+      flush-mode: on-save
+      namespace: spring:session
