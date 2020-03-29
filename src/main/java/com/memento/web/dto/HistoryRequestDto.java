@@ -1,17 +1,18 @@
 package com.memento.web.dto;
 
 
-import com.memento.web.common.TransitionType;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
+@ToString
 @Getter
 @Setter
 @AllArgsConstructor
 public class HistoryRequestDto {
-    private String url;
-    private TransitionType type;
-    private Long visitTime;
+    private String title;
+    private Long lastVisitTime;
+    private String userUrl;
+    private Integer visitCount;
 }
