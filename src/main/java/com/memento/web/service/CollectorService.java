@@ -1,8 +1,6 @@
 package com.memento.web.service;
 
-import com.memento.web.domain.History;
-import com.memento.web.domain.HistoryRepository;
-import com.memento.web.domain.Url;
+import com.memento.web.domain.*;
 import com.memento.web.dto.HistoryRequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
@@ -15,56 +13,62 @@ import javax.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.List;
 
-//TODO
-// 1. User 정보 추가
-
 @Slf4j
 @Service
 public class CollectorService {
     private static final String googlePostFix = " - Google 검색";
     private static final String naverPostFix = " : 네이버 통합검색";
     private String currentKeyword = null;
-    private String userName = "test-user";
     private Logger logger = LoggerFactory.getLogger(CollectorService.class);
 
     @Autowired
     private HttpSession session;
     @Autowired
     private HistoryRepository historyRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    public void saveHistory(List<HistoryRequestDto> historyRequestDtoList) {
+    public void saveHistory(List<HistoryRequestDto> historyRequestDtoList, String userName) {
+        User currentUser = userRepository.findByName(userName)
+                .orElseThrow(() -> new IllegalArgumentException("User Not Founded!"));
+        List<History> currentUserHistoryList = currentUser.getHistoryList();
+
         historyRequestDtoList.forEach( historyRequestDto -> {
                 if (isTrigger(historyRequestDto.getTitle())) {
-                    saveTriggerKeyword(historyRequestDto);
+                    saveTriggerKeyword(historyRequestDto, currentUserHistoryList);
                     setCurrentKeyword(parseKeyword(historyRequestDto.getTitle()));
                 } else {
-                    saveUrl(historyRequestDto);
+                    saveUrl(historyRequestDto,currentUserHistoryList);
                 }
             }
         );
-
+        userRepository.save(currentUser);
+        currentUserHistoryList.forEach(history -> historyRepository.save(history));
         session.setAttribute(userName, currentKeyword);
     }
 
-    private void saveTriggerKeyword(HistoryRequestDto historyRequestDto) {
-        historyRepository.save(dtoToHistory(historyRequestDto));
+    private void saveTriggerKeyword(HistoryRequestDto historyRequestDto, List<History> historyList) {
+        if (historyList.stream().noneMatch(h -> h.getKeyword().equals(parseKeyword(historyRequestDto.getTitle())))) {
+            logger.warn("here? " + historyRequestDto.getTitle());
+            historyList.add(dtoToHistory(historyRequestDto));
+        }
     }
 
-    private void saveUrl(HistoryRequestDto historyRequestDto) {
+    private void saveUrl(HistoryRequestDto historyRequestDto, List<History> historyList) {
         String keyword = getCurrentKeyword();
         logger.warn("Current Keyword? " + keyword );
-        historyRepository.findByKeyword(keyword)
-                        .ifPresent(history -> {
-                            history.addUrl(dtoToUrl(historyRequestDto));
-                            historyRepository.save(history);
-                        });
+        historyList.stream().filter(h -> h.getKeyword().equals(keyword))
+                            .forEach(h -> h.addUrl(Url.builder()
+                                                      .address(historyRequestDto.getUserUrl())
+                                                      .visitedTime(convertToDate(historyRequestDto.getLastVisitTime()))
+                                                      .build()));
     }
 
     private String getCurrentKeyword() {
         if (currentKeyword != null) {
             return currentKeyword;
         } else {
-            return String.valueOf(session.getAttribute(userName));
+            return String.valueOf(session.getAttribute("test-user"));
         }
     }
 
@@ -130,6 +134,6 @@ public class CollectorService {
     }
 
     private Date convertToDate(Long unixTime) {
-        return new Date(unixTime * 1000);
+        return new Date(unixTime);
     }
 }
