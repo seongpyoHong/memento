@@ -1,18 +1,22 @@
 package com.memento.web.dto;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @ToString
 @Getter
 @Setter
-@AllArgsConstructor
 public class HistoryRequestDto {
     private String title;
     private Long lastVisitTime;
     private String userUrl;
     private Integer visitCount;
+
+    @Builder
+    public HistoryRequestDto(String title, Long lastVisitTime, String userUrl, Integer visitCount) {
+        this.title = title;
+        this.lastVisitTime = lastVisitTime;
+        this.userUrl = userUrl;
+        this.visitCount = visitCount;
+    }
 }
