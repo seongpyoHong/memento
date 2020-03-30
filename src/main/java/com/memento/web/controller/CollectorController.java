@@ -1,5 +1,6 @@
 package com.memento.web.controller;
 
+import com.memento.web.dto.HistoryRequestDto;
 import com.memento.web.service.CollectorService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -18,7 +19,6 @@ public class CollectorController {
 
     @Autowired
     private CollectorService collectorService;
-
 
     @PostMapping("/collect")
     public void collectHistory(@RequestBody List<HistoryRequestDto> historyRequestDtoList) {

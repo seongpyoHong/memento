@@ -111,7 +111,7 @@ function buildTypedUrlList() {
 function sendPost(data) {
     console.log(JSON.stringify(data));
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", 'http://localhost:8080', true);
+    xhr.open("POST", 'http://localhost:8080/collect', true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(data));
 }
