@@ -1,14 +1,12 @@
 package com.memento.web.service;
 
 import com.memento.web.controller.SearchController;
-import com.memento.web.domain.History;
 import com.memento.web.domain.HistoryRepository;
+import com.memento.web.domain.UserRepository;
 import com.memento.web.dto.HistoryResponseDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,22 +17,18 @@ public class SearchService {
     private Logger logger = LoggerFactory.getLogger(SearchController.class);
 
     @Autowired
-    private HistoryRepository historyRepository;
+    private UserRepository userRepository;
 
-    public List<HistoryResponseDto> findAll(String user){
-        Page<History> page = historyRepository.findAll(PageRequest.of(0, 10));
-        page.forEach(historyRequestDto -> logger.info(page.toString()));
-        return page.getContent().stream()
+    public List<HistoryResponseDto> findAll(String username){
+        return userRepository.findAllByNameWithPagination(username, 0, 2)
+                .orElseThrow(() -> new IllegalArgumentException("Not Found"))
+                .getHistoryList().stream()
+                .peek(H -> logger.info(H.toString()))
                 .map(HistoryResponseDto::new)
                 .collect(Collectors.toList());
     }
 
-    public List<HistoryResponseDto> findAllByKeywordContaining(String user, String keyword){
-        Page<History> page = historyRepository.findAllByKeywordContaining(keyword,
-                PageRequest.of(0, 10));
-        page.forEach(historyRequestDto -> logger.info(page.toString()));
-        return page.getContent().stream()
-                .map(HistoryResponseDto::new)
-                .collect(Collectors.toList());
-    }
+//    public List<HistoryResponseDto> findAllByKeywordContaining(String user, String keyword){
+//
+//    }
 }
