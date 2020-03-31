@@ -1,6 +1,6 @@
 {{>layout/header}}
 
-<h1>Watch your memory</h1>
+<h1>View My Search History</h1>
 <div class="col-md-12">
     <div class="row">
         <div class="col-md-6">
@@ -23,21 +23,21 @@
     <table class="table table-horizontal table-border">
         <thead class="thead-strong">
         <tr>
-            <th>게시글번호</th>
-            <th>제목</th>
-            <th>작성자</th>
-            <th>최종수정일</th>
+            <th>Keyword</th>
+            <th>urls</th>
         </tr>
         </thead>
         <tbody id="tbody">
-<!--        {{#posts}} &lt;!&ndash;post 리스트 순회&ndash;&gt;-->
-<!--        <tr>-->
-<!--            <td>{{id}}</td>-->
-<!--            <td><a href="/posts/update/{{id}}">{{title}}</a></td>-->
-<!--            <td>{{author}}</td>-->
-<!--            <td>{{modifiedDate}}</td>-->
-<!--        </tr>-->
-<!--        {{/posts}}-->
+        {{#historyList}} <!--post 리스트 순회-->
+        <tr>
+            <td>{{keyword}}</td>
+            <td>
+            {{#urls}}
+                {{address}}<br>
+            {{/urls}}
+            </td>
+        </tr>
+        {{/historyList}}
         </tbody>
     </table>
 </div>

@@ -29,17 +29,17 @@ public class CollectorService {
     private UserRepository userRepository;
 
     public void saveHistory(List<HistoryRequestDto> historyRequestDtoList, String userName) {
-        User currentUser = userRepository.findByName(userName)
-                .orElseThrow(() -> new IllegalArgumentException("User Not Founded!"));
-        List<History> currentUserHistoryList = currentUser.getHistoryList();
+                User currentUser = userRepository.findByName(userName)
+                        .orElseThrow(() -> new IllegalArgumentException("User Not Founded!"));
+                List<History> currentUserHistoryList = currentUser.getHistoryList();
 
-        historyRequestDtoList.forEach( historyRequestDto -> {
-                if (isTrigger(historyRequestDto.getTitle())) {
-                    saveTriggerKeyword(historyRequestDto, currentUserHistoryList);
-                    setCurrentKeyword(parseKeyword(historyRequestDto.getTitle()));
-                } else {
-                    saveUrl(historyRequestDto,currentUserHistoryList);
-                }
+                historyRequestDtoList.forEach( historyRequestDto -> {
+                    if (isTrigger(historyRequestDto.getTitle())) {
+                        saveTriggerKeyword(historyRequestDto, currentUserHistoryList);
+                        setCurrentKeyword(parseKeyword(historyRequestDto.getTitle()));
+                    } else {
+                        saveUrl(historyRequestDto,currentUserHistoryList);
+                    }
             }
         );
         userRepository.save(currentUser);

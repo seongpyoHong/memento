@@ -19,8 +19,9 @@ public class SearchService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<HistoryResponseDto> findAll(String username){
-        return userRepository.findAllByNameWithPagination(username, 0, 2)
+    public List<HistoryResponseDto> findAll(String username, Integer page, Integer limit){
+        Integer skip = (page-1)*limit;
+        return userRepository.findAllByNameWithPagination(username, skip, limit)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found"))
                 .getHistoryList().stream()
                 .peek(H -> logger.info(H.toString()))

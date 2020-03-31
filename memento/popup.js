@@ -21,3 +21,11 @@ document.addEventListener('DOMContentLoaded', function() {
         port.postMessage("Off");
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    var clicklistener = document.getElementById('btnLinkToPage');
+    // onClick's logic below:
+    clicklistener.addEventListener('click', function() {
+        window.open('http://localhost:8080/log');
+    });
+});
