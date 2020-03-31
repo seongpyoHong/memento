@@ -1,84 +1,111 @@
 package com.memento.web.service;
 
-import com.memento.web.common.TransitionType;
-import com.memento.web.domain.History;
-import com.memento.web.domain.HistoryRepository;
+import com.memento.web.domain.*;
 import com.memento.web.dto.HistoryRequestDto;
+import org.bson.types.ObjectId;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
+import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.Objects;
-import java.util.stream.Collector;
-
-import static org.junit.jupiter.api.Assertions.*;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptEngine;
+import java.util.List;
+import java.util.function.Consumer;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 class CollectorServiceTest {
 
-    private static final String URL1 = "https://www.google.com/search?q=search+ing&oq=search+ing&aqs=chrome..69i57j35i39l2j0l5.1866j0j8&sourceid=chrome&ie=UTF-8";
-    private static final String URL2 = "https://www.google.com/search?sxsrf=ALeKk02bCzZCiGppQ9x2QA2AZ3YpoxKgHg%3A1585142690503&ei=olt7XpqrHoXmwQPe4aXoBg&q=search_no_blank&oq=search_no_blank&gs_l=psy-ab.3...89208.93651..93982...2.0..0.169.2335.0j16......0....1..gws-";
+    private static final String title1 = "스프링부트 - Google 검색";
+    private static final String title2 = "자바 : 네이버 통합검색";
+
     @Autowired
     private HistoryRepository historyRepository;
-
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private CollectorService collectorService;
+    @Autowired
+    private HttpSession session;
+
+    private List<HistoryRequestDto> requestDtoList = new ArrayList<>();
+    private String userName = "test-user";
+
+    @BeforeEach
+    void setUp() {
+        requestDtoList.add(HistoryRequestDto.builder().title(title1).userUrl("http//springboot1.com").lastVisitTime(1585405292000L).visitCount(1).build());
+        requestDtoList.add(HistoryRequestDto.builder().title("스프링부트-블로그-1").userUrl("http//springboot2.com").lastVisitTime(1585405292000L).visitCount(1).build());
+        requestDtoList.add(HistoryRequestDto.builder().title("스프링부트-블로그-2").userUrl("http//springboot3.com").lastVisitTime(1585405292000L).visitCount(1).build());
+
+        //save test user
+        userRepository.save(User.builder().email("test@email.com").id(ObjectId.get().toString()).name("test-user").password("password").build());
+    }
+
+    @AfterEach
+    void tearDown() {
+        historyRepository.deleteAll();
+        userRepository.deleteAll();
+        session.removeAttribute(userName);
+    }
 
     @Test
-    void 데이터_저장_테스트() {
-
+    void 키워드_파싱_및_트리거_저장() {
         //given
-        String keyword = "search ing";
-        String type = TransitionType.LINK.getName();
-        Long unixTime = 1585225091L;
-        HistoryRequestDto requestDto = new HistoryRequestDto(URL1, type, unixTime);
         //when
-        Mono<History> result = collectorService.saveHistory(requestDto);
-
+        collectorService.saveHistory(requestDtoList,userName);
         //then
-        History savedResult = Objects.requireNonNull(result.block());
-        assertEquals(URL1, savedResult.getUrl());
-        assertEquals(type, savedResult.getType());
-        assertEquals(new Date(unixTime * 1000),savedResult.getVisitTime());
-        assertEquals(keyword, savedResult.getKeyword());
-        System.out.println(savedResult.toString());
+        List<History> userHistory = userRepository.findByName(userName).get().getHistoryList();
+        assertEquals(userHistory.get(0).getKeyword(), "스프링부트");
     }
 
     @Test
-    void 키워드_추출_테스트() {
+    void 트리거_중복_저장_방지() {
         //given
-        String startDelim1 = "&q=";
-        String startDelim2 = "?q=";
-        String endDelim = "&oq=";
-
-        boolean isContainStartDelim1 = URL2.contains(startDelim1) && URL2.contains(endDelim) ;
-        boolean isContainStartDelim2 = URL1.contains(startDelim2) && URL1.contains(endDelim);
-        //TODO: + -> % // 1%2 ->1%152
-        if (isContainStartDelim1) {
-            String keyword = URL2.substring(URL2.indexOf(startDelim1)+3, URL2.indexOf(endDelim));
-            assertEquals("search_no_blank",keyword);
-        }
-
-        if (isContainStartDelim2) {
-            String keyword = URL1.substring(URL1.indexOf(startDelim2)+3, URL1.indexOf(endDelim));
-            assertEquals("search ing",convertToOriginString(keyword));
-         }
-
-        String key = "2%25+1";
-        assertEquals("2% 1",convertToOriginString(key) );
+        collectorService.saveHistory(requestDtoList,userName);
+        List<History> beforeUserHistory = userRepository.findByName(userName).get().getHistoryList();
+        //when
+        collectorService.saveHistory(requestDtoList,userName);
+        //then
+        List<History> afterUserHistory = userRepository.findByName(userName).get().getHistoryList();
+        assertEquals(beforeUserHistory.size(), afterUserHistory.size());
+    }
+    
+    @Test
+    void URL_저장(){
+        //given
+        //when
+        collectorService.saveHistory(requestDtoList,userName);
+        //then
+        History springBootHistory = userRepository.findByName(userName).get().getHistoryList().get(0);
+        List<Url> springBootUrl = springBootHistory.getUrls();
+        assertEquals(springBootUrl.size(), 2);
+        assertEquals(springBootUrl.get(0).getAddress(),"http//springboot2.com" );
+        assertEquals(springBootUrl.get(0).getVisitedTime(), new Date(1585405292000L) );
+        assertEquals(springBootUrl.get(1).getAddress(), "http//springboot3.com");
+        assertEquals(springBootUrl.get(1).getVisitedTime(), new Date(1585405292000L) );
+    }
+    
+    @Test
+    void 이전_키워드_캐싱() {
+        //given
+        collectorService.saveHistory(requestDtoList,userName);
+        List<HistoryRequestDto> afterRequestDto = new ArrayList<>();
+        afterRequestDto.add(HistoryRequestDto.builder().title("스프링부트-블로그-3").userUrl("http//springboot4.com").lastVisitTime(1585405292000L).visitCount(1).build());
+        //when
+        collectorService.saveHistory(afterRequestDto,userName);
+        //then
+        History springBootHistory = userRepository.findByName(userName).get().getHistoryList().get(0);
+        List<Url> springBootUrl = springBootHistory.getUrls();
+        assertEquals(springBootUrl.size(), 3);
+        assertEquals(springBootUrl.get(0).getAddress(),"http//springboot3.com" );
+        assertEquals(springBootUrl.get(0).getVisitedTime(), new Date(1585405292000L) );
     }
 
-    private String convertToOriginString(String keyword) {
-        return keyword.replace("+", " ")
-                .replace("%2B","+")
-                .replace("%25","%");
-    }
 }
