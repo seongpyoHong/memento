@@ -1,6 +1,8 @@
 package com.memento.web;
 
+import com.memento.web.domain.UserRepository;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,6 +14,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 @EnableRedisHttpSession
 @SpringBootApplication
 public class WebApplication {
+
     public static void main(String[] args) {
         SpringApplication.run(WebApplication.class, args);
     }
