@@ -15,15 +15,18 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping("/log")
-    public void index(Model model) {
-        model.addAttribute("historyList",searchService.findAll("test-user"));
+    public void log(Model model) {
+        model.addAttribute("historyList",
+                searchService.findAll("test-user", 1, 2));
 //        model.addAttribute("histories", searchService.findAll());
 //        return "log";
 //        return new ResponseEntity<>(searchService.findAll(), HttpStatus.OK);
     }
 
     @GetMapping("/log/{keyword}")
-    public void postsUpdate(@PathVariable String keyword) {
+    public void keywordlog(@PathVariable String keyword, Model model) {
+        model.addAttribute("historyList",
+                searchService.findAllByKeyword("test-user", "test", 1, 2));
 //        model.addAttribute("histories", searchService.findAllByKeywordContaining(keyword));
 //        return "log-detail";
 //        return new ResponseEntity<>(searchService.findAllByKeywordContaining(keyword), HttpStatus.OK);

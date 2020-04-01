@@ -2,6 +2,7 @@ package com.memento.web.domain;
 
 import com.memento.web.dto.HistoryRequestDto;
 import lombok.*;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
