@@ -9,10 +9,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,13 +26,13 @@ public class CollectorController {
 
     @GetMapping("/create-test-user")
     public void createTestUser() {
-        userRepository.save(User.builder().email("test@email.com").id(ObjectId.get().toString()).name("test-user").password("password").build());
+        userRepository.save(User.builder().id(ObjectId.get().toString()).name("test-user").build());
     }
 
     @PostMapping("/collect")
-    public void collectHistory(@RequestBody List<HistoryRequestDto> historyRequestDtoList) {
+    public void collectHistory(@RequestBody List<HistoryRequestDto> historyRequestDtoList, @RequestParam("name") String name) {
         historyRequestDtoList.forEach(historyRequestDto -> logger.info(historyRequestDto.toString()));
-        String userName = "test-user";
-        collectorService.saveHistory(historyRequestDtoList, "test-user");
+        logger.warn(name);
+        collectorService.saveHistory(historyRequestDtoList, name);
     }
 }
