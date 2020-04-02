@@ -52,7 +52,7 @@ class SearchServiceTest {
         requestDtoList.add(HistoryRequestDto.builder().title("test3-1").userUrl("http//springboot3-1.com").lastVisitTime(1585405292000L).visitCount(1).build());
 
         //save test user
-        userRepository.save(User.builder().email("test@email.com").id(ObjectId.get().toString()).name("test-user").password("password").build());
+        userRepository.save(User.builder().name("test-admin").id(ObjectId.get().toString()).build());
         collectorService.saveHistory(requestDtoList, user);
     }
 

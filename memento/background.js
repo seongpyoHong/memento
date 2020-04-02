@@ -4,6 +4,7 @@ chrome.extension.onConnect.addListener(function(port) {
         console.log("message recieved " + msg);
         if (msg == 'On') {
             console.log('워커 시작');
+            Login();
             startWorker();
         }
         else if (msg == 'Off'){
@@ -21,7 +22,8 @@ function startWorker() {
     }
     interval = setInterval( function() {
         buildTypedUrlList();
-    }, 3000 );
+    }, 10000 );
+
 }
 
 function stopWorker() {
@@ -43,7 +45,7 @@ function stopWorker() {
 // 기록을 검색하여 사용자가 입력한 링크를 최대 10개 찾아 팝업으로 표시
 function buildTypedUrlList() {
     // 지난주의 히스토리 아이템을 찾기 위해, 현재 시간에서 일주일을 뺀다.
-    var tenSec = (new Date).getTime() - 1000 * 10;
+    var searchInterval = (new Date).getTime() - 1000 * 10 * 1.01;
 
     // chrome.history.getVisits() 에서 받기를 원하는 callback 수 추적
     // 0에 도달할 경우, 모든 결과를 얻는다
@@ -51,7 +53,7 @@ function buildTypedUrlList() {
 
     chrome.history.search({
         'text': '',              // 모든 히스토리 아이템을 가져온다
-        'startTime': tenSec  // 10초 이내
+        'startTime': searchInterval  // 10초 이내
     },
         function(historyItems) {
         // 각각의 히스토리로부터 모든 방문 세부사항을 얻음
@@ -107,11 +109,33 @@ function buildTypedUrlList() {
 
     // 디스플레이 할 최종 url 리스트가 있을 경우 호출됨
 }
+function Login() {
+    chrome.identity.getProfileUserInfo(function(userInfo) {
+        var url = "http://localhost:8080/save-user?name=" + userInfo.email;
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST",url ,true);
+        xhr.setRequestHeader('Content-Type',  'application/x-www-form-urlencoded');
+        xhr.send('');
+    });
+}
 
 function sendPost(data) {
+<<<<<<< HEAD
     console.log(JSON.stringify(data));
     var xhr = new XMLHttpRequest();
     xhr.open("POST", 'http://localhost:8080/collect', true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(data));
+=======
+    var destUrl;
+    chrome.identity.getProfileUserInfo(function(userInfo) {
+        destUrl = 'http://localhost:8080/collect?name=' +userInfo.email;
+        console.log(destUrl);
+        console.log(JSON.stringify(data));
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", destUrl, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(data));
+    });
+>>>>>>> 00a0503907e4a1c2783ca8377a1e1e8c106b4d90
 }

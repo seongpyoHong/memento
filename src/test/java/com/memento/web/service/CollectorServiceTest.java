@@ -45,7 +45,7 @@ class CollectorServiceTest {
         requestDtoList.add(HistoryRequestDto.builder().title("스프링부트-블로그-2").userUrl("http//springboot3.com").lastVisitTime(1585405292000L).visitCount(1).build());
 
         //save test user
-        userRepository.save(User.builder().email("test@email.com").id(ObjectId.get().toString()).name("test-user").password("password").build());
+        userRepository.save(User.builder().id(ObjectId.get().toString()).name("test-user").build());
     }
 
     @AfterEach
@@ -97,6 +97,7 @@ class CollectorServiceTest {
         //given
         collectorService.saveHistory(requestDtoList,userName);
         List<HistoryRequestDto> afterRequestDto = new ArrayList<>();
+
         afterRequestDto.add(HistoryRequestDto.builder()
                 .title("스프링부트-블로그-3")
                 .userUrl("http//springboot4.com")

@@ -17,17 +17,13 @@ import java.util.List;
 public class User {
     @Id
     private String id;
-    private String email;
-    private String password;
     private String name;
 
     private List<History> historyList = new ArrayList<>();
 
     @Builder
-    public User(String id, String email, String password, String name) {
+    public User(String id, String name) {
         this.id = id;
-        this.email = email;
-        this.password = password;
         this.name = name;
     }
 

@@ -6,7 +6,9 @@
     "history",
     "<all_urls>",
     "storage",
-    "tabs"
+    "tabs",
+    "identity",
+    "identity.email"
   ],
   "background": {
     "scripts": ["background.js"]

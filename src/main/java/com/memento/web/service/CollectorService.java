@@ -18,6 +18,7 @@ import java.util.List;
 public class CollectorService {
     private static final String googlePostFix = " - Google 검색";
     private static final String naverPostFix = " : 네이버 통합검색";
+    private String currentUserName = null;
     private String currentKeyword = null;
     private Logger logger = LoggerFactory.getLogger(CollectorService.class);
 
@@ -29,17 +30,18 @@ public class CollectorService {
     private UserRepository userRepository;
 
     public void saveHistory(List<HistoryRequestDto> historyRequestDtoList, String userName) {
-                User currentUser = userRepository.findByName(userName)
-                        .orElseThrow(() -> new IllegalArgumentException("User Not Founded!"));
-                List<History> currentUserHistoryList = currentUser.getHistoryList();
+        currentUserName = userName;
+        User currentUser = userRepository.findByName(userName)
+                .orElseThrow(() -> new IllegalArgumentException("User Not Founded!"));
+        List<History> currentUserHistoryList = currentUser.getHistoryList();
 
-                historyRequestDtoList.forEach( historyRequestDto -> {
-                    if (isTrigger(historyRequestDto.getTitle())) {
-                        saveTriggerKeyword(historyRequestDto, currentUserHistoryList);
-                        setCurrentKeyword(parseKeyword(historyRequestDto.getTitle()));
-                    } else {
-                        saveUrl(historyRequestDto,currentUserHistoryList);
-                    }
+        historyRequestDtoList.forEach( historyRequestDto -> {
+                if (isTrigger(historyRequestDto.getTitle())) {
+                    saveTriggerKeyword(historyRequestDto, currentUserHistoryList);
+                    setCurrentKeyword(parseKeyword(historyRequestDto.getTitle()));
+                } else {
+                    saveUrl(historyRequestDto,currentUserHistoryList);
+                }
             }
         );
         userRepository.save(currentUser);
@@ -68,7 +70,7 @@ public class CollectorService {
         if (currentKeyword != null) {
             return currentKeyword;
         } else {
-            return String.valueOf(session.getAttribute("test-user"));
+            return String.valueOf(session.getAttribute(currentUserName));
         }
     }
 
