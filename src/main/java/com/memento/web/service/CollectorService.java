@@ -167,7 +167,7 @@ public class CollectorService {
         return hashOperations.keys(redisId).stream()
                                             .findAny()
                                             .map( k -> hashOperations.get(redisId,k))
-                                            .map(TabUrl::getKeyword).get();
+                                            .map(TabUrl::getKeyword).orElseThrow(() -> new IllegalArgumentException("Can't Know Keyword. It's Discard..."));
     }
 
     private boolean isNewKeywordTrigger(HistoryRequestDto requestDto) {
