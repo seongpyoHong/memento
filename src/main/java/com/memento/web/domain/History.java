@@ -18,10 +18,8 @@ import java.util.List;
 public class History {
     @Id
     private String id;
-
-    private List<Url> urls = new ArrayList<>();
-
     private String keyword;
+    private List<Url> urls = new ArrayList<>();
 
     @Builder
     public History(String id, String keyword) {

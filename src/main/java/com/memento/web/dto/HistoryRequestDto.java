@@ -7,16 +7,19 @@ import lombok.*;
 @Getter
 @Setter
 public class HistoryRequestDto {
+
+    private Integer tabId;
     private String title;
-    private Long lastVisitTime;
-    private String userUrl;
-    private Integer visitCount;
+    private String url;
+    private Long visitedTime;
+    private Long stayedTime;
 
     @Builder
-    public HistoryRequestDto(String title, Long lastVisitTime, String userUrl, Integer visitCount) {
+    public HistoryRequestDto(Integer tabId, String title, String url, Long visitedTime, Long stayedTime) {
+        this.tabId = tabId;
         this.title = title;
-        this.lastVisitTime = lastVisitTime;
-        this.userUrl = userUrl;
-        this.visitCount = visitCount;
+        this.url = url;
+        this.visitedTime = visitedTime;
+        this.stayedTime = stayedTime;
     }
 }

@@ -26,4 +26,7 @@ public class User {
         this.name = name;
     }
 
+    public void addHistory(History history) {
+        this.historyList.add(history);
+    }
 }

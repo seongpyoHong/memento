@@ -4,6 +4,7 @@ import com.memento.web.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,5 +28,12 @@ public class LoginController {
             userService.saveUser(hashCode,name);
             System.out.println("here");
         }
+    }
+
+    //TODO: Move to Search Controller
+    @GetMapping("view-log")
+    public void viewLog(@RequestParam("name") String name) {
+        System.out.println("View Request");
+        userService.saveToMainDB(name);
     }
 }
