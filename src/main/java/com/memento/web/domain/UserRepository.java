@@ -12,6 +12,6 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     @Query(value = "{'name': ?0}", fields = "{'historyList': {$slice: [?1, ?2]}}")
     Optional<User> findAllByNameWithPagination(String name, int skip, int limit);
-    @Query(value = "{'name': ?0, 'historyList.keyword': {$regex: ?1}}", fields = "{'historyList': {$slice: [?2, ?3]}}")
-    Optional<User> findAllByNameAndKeywordWithPagination(String name, String keyword, int skip, int limit);
+
+//    @Query(value = "{'name': ?0, 'historyList': { $elemMatch: {'keyword': {$regex: ?1, $options:'i'}}}", fields = "{'historyList': {$slice: [?2, ?3]}}")
 }

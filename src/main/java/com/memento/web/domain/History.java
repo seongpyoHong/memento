@@ -2,15 +2,12 @@ package com.memento.web.domain;
 
 import com.memento.web.dto.HistoryRequestDto;
 import lombok.*;
-import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import javax.persistence.Id;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @ToString
 @NoArgsConstructor
@@ -19,10 +16,8 @@ import java.util.List;
 public class History {
     @Id
     private String id;
-
-    private List<Url> urls = new ArrayList<>();
-
     private String keyword;
+    private List<Url> urls = new ArrayList<>();
 
     @Builder
     public History(String id, String keyword) {
@@ -31,6 +26,6 @@ public class History {
     }
 
     public void addUrl(Url url) {
-        urls.add(url);
+        this.urls.add(url);
     }
 }
