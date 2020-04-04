@@ -31,7 +31,7 @@ public class LoginController {
     }
 
     //TODO: Move to Search Controller
-    @GetMapping("view-log")
+    @GetMapping("/view-log")
     public void viewLog(@RequestParam("name") String name) {
         System.out.println("View Request");
         userService.saveToMainDB(name);

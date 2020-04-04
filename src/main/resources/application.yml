@@ -16,5 +16,5 @@ spring:
     redis:
       flush-mode: on-save
       namespace: spring:session
-  profiles:
-    active: local
+#  profiles:
+#    active: local

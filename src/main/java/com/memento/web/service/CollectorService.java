@@ -135,7 +135,7 @@ public class CollectorService {
         hashOperations.keys(redisId).stream()
                 .map(address -> hashOperations.get(redisId, address))
                 .map(this::dtoToUrl)
-                .forEach(url -> newHistory.addUrl(url));
+                .forEach(newHistory::addUrl);
 
         return newHistory;
     }
@@ -143,12 +143,11 @@ public class CollectorService {
         List<Url> newUrls = hashOperations.keys(redisId).stream()
                                     .map(address -> hashOperations.get(redisId, address))
                                     .map(this::dtoToUrl)
+                                    .peek(url -> {
+                                        if (isVisitedUrl(history.getUrls(),url)) {
+                                            url.addVisitedCount(getCurrentVisitedCount(history.getUrls(), url));
+                                        }})
                                     .collect(Collectors.toList());
-        newUrls.forEach(url -> {
-            if (isVisitedUrl(history.getUrls(),url)) {
-                url.addVisitedCount(getCurrentVisitedCount(history.getUrls(), url));
-            }
-        });
         history.getUrls().removeIf(url -> isVisitedUrl(newUrls, url));
 
         newUrls.forEach(history::addUrl);
