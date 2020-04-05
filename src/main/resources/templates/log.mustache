@@ -1,44 +1,43 @@
 {{>layout/header}}
 
-<h1>View My Search History</h1>
+
 <div class="col-md-12">
-    <div class="row">
-        <div class="col-md-6">
-<!--            {{#loginUserName}}-->
-<!--                Logged in as: <span id="user">{{loginUserName}}</span>-->
-<!--                <a href="/logout" class="btn btn-info active" role="button">-->
-<!--                    Logout &lt;!&ndash; spring security 기본 logout url, 별도 컨트롤러 필요가 없다&ndash;&gt;-->
-<!--                </a>-->
-<!--            {{/loginUserName}}-->
-<!--            {{^loginUserName}}-->
-<!--                <a href="/oauth2/authorization/google"-->
-<!--                   class="btn btn-success active" role="button">Google Login</a>-->
-<!--                <a href="/oauth2/authorization/naver"-->
-<!--                   class="btn btn-secondary active" role="button">Naver Login</a>-->
-<!--            {{/loginUserName}}&lt;!&ndash; spring security 기본 login url, 별도 컨트롤러 x&ndash;&gt;-->
-        </div>
-    </div>
-    <br>
+<h2>Hi, {{userName}}</h2>
     <!-- 목록 출력 -->
-    <table class="table table-horizontal table-border">
+    <table id = "history">
         <thead class="thead-strong">
         <tr>
             <th>Keyword</th>
-            <th>urls</th>
+            <th>Number of URL</th>
         </tr>
         </thead>
         <tbody id="tbody">
-        {{#historyList}} <!--post 리스트 순회-->
-        <tr>
-            <td>{{keyword}}</td>
-            <td>
-            {{#urls}}
-                {{address}}<br>
-            {{/urls}}
-            </td>
-        </tr>
+        {{#historyList}}
+            <tr>
+                <td><a href="/log-detail?name={{userName}}&keyword={{keyword}}&page=1&type=default">{{keyword}}</a></td>
+                <td>{{urlCount}}</td>
+            </tr>
         {{/historyList}}
         </tbody>
     </table>
+    <div class="dropdown" style=" float: left; width: 42%; padding:10px 10px 10px 0px;">
+    </div>
+    <div class="pagination" style=" float: left; width: 25%; padding:10px; text-align: right">
+        <a href="#">&laquo;</a>
+        <a href="#" class="active">1</a>
+        <a href="#">2</a>
+        <a href="#">3</a>
+        <a href="#">4</a>
+        <a href="#">5</a>
+        <a href="#">6</a>
+        <a href="#">&raquo;</a>
+    </div>
+
+    <div class="text-input" style="float: left; width: 33%; padding:10px; text-align: right">
+        <input type="text" id = "keyword" placeholder="Search..">
+        <input type="hidden" id = "userName" value={{userName}}>
+        <button type="button" class="btn btn-primary" id="btn-search">Search</button>
+    </div>
 </div>
+
 {{>layout/footer}}

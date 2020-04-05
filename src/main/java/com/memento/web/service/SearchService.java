@@ -3,6 +3,7 @@ package com.memento.web.service;
 import com.memento.web.controller.SearchController;
 import com.memento.web.domain.*;
 import com.memento.web.dto.HistoryResponseDto;
+import com.memento.web.dto.SortType;
 import com.memento.web.dto.UserResponseDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,21 @@ public class SearchService {
 
     @Autowired
     private UserRepository userRepository;
+
+    public HistoryResponseDto findByKeywordInCache(String userName, String keyword, Long page, Integer limit, String type) {
+        HistoryResponseDto responseDto = findAllByKeyword(userName, keyword, page, limit).stream().filter(dto -> dto.getKeyword().equals(keyword)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Keyword Not Found!"));
+
+        if (type.equals(SortType.STAYING.getName())) {
+            responseDto.sortByStayedtime();
+        } else if (type.equals(SortType.RECENT.getName())) {
+            responseDto.sortByVisitedtime();
+        } else if (type.equals(SortType.VISITCOUNT.getName())) {
+            responseDto.sortByVisitedCount();
+        }
+
+        return responseDto;
+    }
 
     public List<HistoryResponseDto> findAll(String username, Integer page, Integer limit) {
         int skip = (page - 1) * limit;
