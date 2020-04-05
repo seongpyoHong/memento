@@ -81,7 +81,7 @@ public class UserService {
 
     private History updateUrlInMainDB(History history, String redisId) {
         List<Url> newUrls = hashOperations.keys(redisId).stream()
-                .map(address -> hashOperations.get(redisId, address))
+                .map(address -> hashOperations.get(redisId, address)).filter(Objects::nonNull)
                 .map(this::dtoToUrl)
                 .peek(url -> {
                     if (isVisitedUrl(history.getUrls(),url)) {

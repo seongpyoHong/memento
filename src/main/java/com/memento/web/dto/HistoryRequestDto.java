@@ -6,7 +6,6 @@ import lombok.*;
 @Getter
 @Setter
 public class HistoryRequestDto {
-
     private Integer tabId;
     private String title;
     private String url;

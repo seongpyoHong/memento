@@ -36,4 +36,16 @@ public class LoginController {
         System.out.println("View Request");
         userService.saveToMainDB(name);
     }
+
+    @PostMapping("/close-window")
+    public void closeWindow(@RequestParam("name") String name) {
+        System.out.println("Close Window");
+        userService.saveToMainDB(name);
+    }
+
+    @PostMapping("/stop-worker")
+    public void stopWorker(@RequestParam("name") String name) {
+        System.out.println("Close Window");
+        userService.saveToMainDB(name);
+    }
 }

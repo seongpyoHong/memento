@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class SearchService {
     private Logger logger = LoggerFactory.getLogger(SearchController.class);
+    private final Integer defaultPageLimit = 2;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -32,9 +33,10 @@ public class SearchService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<HistoryResponseDto> findAll(String username, Integer page, Integer limit) {
-        int skip = (page - 1) * limit;
-        return userRepository.findAllByNameWithPagination(username, skip, limit)
+    @Cacheable(value = "all-keyword")
+    public List<HistoryResponseDto> findAll(String username, Long page) {
+        long skip = (page - 1) * defaultPageLimit;
+        return userRepository.findAllByNameWithPagination(username, skip, defaultPageLimit)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found"))
                 .getHistoryList().stream()
                 .peek(H -> logger.info(H.toString()))
@@ -43,7 +45,7 @@ public class SearchService {
     }
 
     @Cacheable(value = "include-keyword")
-    public List<HistoryResponseDto> findAllByKeyword(String username, String search, Long page, Integer limit){
+    public List<HistoryResponseDto> findAllByKeyword(String username, String search, Long page){
 
         List<AggregationOperation> list = new ArrayList<AggregationOperation>();
         list.add(Aggregation.match(Criteria.where("name").is(username)));
@@ -53,8 +55,8 @@ public class SearchService {
         list.add(Aggregation.project("id", "name", "historyList"));
         // 추가
         list.add(Aggregation.unwind("historyList"));
-        list.add(Aggregation.skip((page - 1)*limit));
-        list.add(Aggregation.limit(limit));
+        list.add(Aggregation.skip((page - 1)*defaultPageLimit));
+        list.add(Aggregation.limit(defaultPageLimit));
 
         TypedAggregation<User> agg = Aggregation.newAggregation(User.class, list);
 
@@ -64,21 +66,38 @@ public class SearchService {
                 .collect(Collectors.toList());
     }
 
-
-    public List<HistoryResponseDto> findAllByKeywordVisitedTime(String username, String search, Long page, Integer limit){
-        List<HistoryResponseDto> responseDtos = findAllByKeyword(username, search, page, limit);
+    public List<HistoryResponseDto> findAllBySortedVisitedTime(String username, Long page){
+        List<HistoryResponseDto> responseDtos = findAll(username, page);
         responseDtos.forEach(HistoryResponseDto::sortByVisitedtime);
         return responseDtos;
     }
 
-     public List<HistoryResponseDto> findAllByKeywordVisitedCount(String username, String search, Long page, Integer limit){
-        List<HistoryResponseDto> responseDtos = findAllByKeyword(username, search, page, limit);
+    public List<HistoryResponseDto> findAllBySortedVisitedCount(String username, Long page){
+        List<HistoryResponseDto> responseDtos = findAll(username, page);
         responseDtos.forEach(HistoryResponseDto::sortByVisitedCount);
         return responseDtos;
     }
 
-    public List<HistoryResponseDto> findAllByKeywordStayedtime(String username, String search, Long page, Integer limit){
-        List<HistoryResponseDto> responseDtos = findAllByKeyword(username, search, page, limit);
+    public List<HistoryResponseDto> findAllBySortedStayedTime(String username, Long page){
+        List<HistoryResponseDto> responseDtos = findAll(username, page);
+        responseDtos.forEach(HistoryResponseDto::sortByStayedtime);
+        return responseDtos;
+    }
+
+    public List<HistoryResponseDto> findAllByKeywordVisitedTime(String username, String search, Long page){
+        List<HistoryResponseDto> responseDtos = findAllByKeyword(username, search, page);
+        responseDtos.forEach(HistoryResponseDto::sortByVisitedtime);
+        return responseDtos;
+    }
+
+     public List<HistoryResponseDto> findAllByKeywordVisitedCount(String username, String search, Long page){
+        List<HistoryResponseDto> responseDtos = findAllByKeyword(username, search, page);
+        responseDtos.forEach(HistoryResponseDto::sortByVisitedCount);
+        return responseDtos;
+    }
+
+    public List<HistoryResponseDto> findAllByKeywordStayedTime(String username, String search, Long page){
+        List<HistoryResponseDto> responseDtos = findAllByKeyword(username, search, page);
         responseDtos.forEach(HistoryResponseDto::sortByStayedtime);
         return responseDtos;
     }

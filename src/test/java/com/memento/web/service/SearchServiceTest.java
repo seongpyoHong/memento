@@ -88,31 +88,45 @@ class SearchServiceTest {
     // service test
     @Test
     void 키워드_정보_페이지별_반환() {
-        List<HistoryResponseDto> responseDtos = searchService.findAll(user, 1, 2);
-        List<HistoryResponseDto> responseDtos1 = searchService.findAll(user, 2, 3);
-        List<HistoryResponseDto> responseDtos2 = searchService.findAll(user, 3, 1);
+        List<HistoryResponseDto> responseDtos = searchService.findAll(user, 1L);
+        List<HistoryResponseDto> responseDtos1 = searchService.findAll(user, 2L);
+        List<HistoryResponseDto> responseDtos2 = searchService.findAll(user, 3L);
 
         assertEquals(responseDtos.size(), 2);
         assertEquals(responseDtos.get(1).getKeyword(), "test2");
-        assertEquals(responseDtos1.size(), 1);
-        assertEquals(responseDtos1.get(0).getKeyword(), "test4");
-        assertEquals(responseDtos2.size(), 1);
-        assertEquals(responseDtos2.get(0).getKeyword(), "tset3");
+        assertEquals(responseDtos1.size(), 2);
+        assertEquals(responseDtos1.get(1).getKeyword(), "test4");
+        assertEquals(responseDtos2.size(), 0);
     }
 
     @Test
     void 검색어_페이지별_반환() {
-        List<HistoryResponseDto> responseDtos = searchService.findAllByKeyword(user, "test", 1L, 3);
-        List<HistoryResponseDto> responseDtos1 = searchService.findAllByKeyword(user, "test", 2L, 2);
-        List<HistoryResponseDto> responseDtos2 = searchService.findAllByKeyword(user, "test", 1L, 4);
+        List<HistoryResponseDto> responseDtos = searchService.findAllByKeyword(user, "test", 1L);
+        List<HistoryResponseDto> responseDtos1 = searchService.findAllByKeyword(user, "test", 2L);
 
         System.out.println(responseDtos);
-        assertEquals(responseDtos.size(), 3);
+        assertEquals(responseDtos.size(), 2);
         assertEquals(responseDtos.get(0).getKeyword(), "test1");
         assertEquals(responseDtos1.size(), 1);
         assertEquals(responseDtos1.get(0).getKeyword(), "test4");
-        assertEquals(responseDtos2.size(), 3);
-        assertEquals(responseDtos2.get(0).getKeyword(), "test1");
-        assertEquals(responseDtos2.get(2).getKeyword(), "test4");
+    }
+
+    @Test
+    void 정렬_테스트() {
+        List<HistoryResponseDto> responseDtos = searchService.findAllBySortedStayedTime(user, 1L);
+        List<HistoryResponseDto> responseDtos1 = searchService.findAllBySortedVisitedCount(user, 1L);
+        List<HistoryResponseDto> responseDtos2 = searchService.findAllBySortedVisitedTime(user, 1L);
+
+        System.out.println(responseDtos);
+        System.out.println(responseDtos1);
+        System.out.println(responseDtos2);
+
+        List<HistoryResponseDto> responseDtos3 = searchService.findAllByKeywordStayedTime(user, "test", 1L);
+        List<HistoryResponseDto> responseDtos4 = searchService.findAllByKeywordVisitedCount(user, "test",1L);
+        List<HistoryResponseDto> responseDtos5 = searchService.findAllByKeywordVisitedTime(user, "test",1L);
+
+        System.out.println(responseDtos3);
+        System.out.println(responseDtos4);
+        System.out.println(responseDtos5);
     }
 }
