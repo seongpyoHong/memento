@@ -16,5 +16,10 @@ spring:
     redis:
       flush-mode: on-save
       namespace: spring:session
+logging:
+  level:
+    root: WARN
+    org.springframework.data.mongodb.repository.Query: DEBUG
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 #  profiles:
 #    active: local

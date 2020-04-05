@@ -9,12 +9,13 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.util.Date;
 
 @ToString
 @NoArgsConstructor
 @Getter
-public class Url {
+public class Url implements Serializable {
     private String address;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -36,4 +37,5 @@ public class Url {
     public void addVisitedCount(Integer count) {
         this.visitedCount += count;
     }
+
 }

@@ -7,9 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import javax.persistence.Id;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @ToString
 @NoArgsConstructor
@@ -28,6 +26,6 @@ public class History {
     }
 
     public void addUrl(Url url) {
-        urls.add(url);
+        this.urls.add(url);
     }
 }

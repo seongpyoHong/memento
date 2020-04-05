@@ -158,6 +158,7 @@ class CollectorServiceTest {
     @Test
     void 다중탭_Redis_저장_테스트() {
         //given
+
         HistoryRequestDto keywordRequestDto2 = HistoryRequestDto.builder().stayedTime(20000L).tabId(2).title("test2 - Google 검색").url("http//spring.com").visitedTime(20000L).build();
         HistoryRequestDto urlRequestDto2 = HistoryRequestDto.builder().stayedTime(10000L).tabId(2).title("title1").url("http//springboot2.com").visitedTime(10000L).build();
         HistoryRequestDto urlRequestDto3 = HistoryRequestDto.builder().stayedTime(10000L).tabId(1).title("title1").url("http//springboot2.com").visitedTime(10000L).build();

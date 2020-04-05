@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
+@EnableCaching
 @EnableRedisHttpSession
 @SpringBootApplication
 public class WebApplication {

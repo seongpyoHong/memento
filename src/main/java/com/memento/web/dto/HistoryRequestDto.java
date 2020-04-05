@@ -1,6 +1,5 @@
 package com.memento.web.dto;
 
-
 import lombok.*;
 
 @ToString
