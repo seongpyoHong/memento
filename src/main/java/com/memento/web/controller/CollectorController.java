@@ -24,15 +24,10 @@ public class CollectorController {
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping("/create-test-user")
-    public void createTestUser() {
-        userRepository.save(User.builder().id(ObjectId.get().toString()).name("test-user").build());
-    }
-
     @PostMapping("/collect")
-    public void collectHistory(@RequestBody List<HistoryRequestDto> historyRequestDtoList, @RequestParam("name") String name) {
-        historyRequestDtoList.forEach(historyRequestDto -> logger.info(historyRequestDto.toString()));
+    public void collectHistory(@RequestBody HistoryRequestDto historyRequestDto, @RequestParam("name") String name) {
+        logger.info(historyRequestDto.toString());
         logger.warn(name);
-        collectorService.saveHistory(historyRequestDtoList, name);
+        collectorService.saveHistory(historyRequestDto, name);
     }
 }

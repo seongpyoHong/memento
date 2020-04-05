@@ -1,17 +1,20 @@
 package com.memento.web.service;
 
+import com.memento.web.common.RedisId;
+import com.memento.web.common.TabUrl;
 import com.memento.web.domain.*;
 import com.memento.web.dto.HistoryRequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -19,81 +22,176 @@ public class CollectorService {
     private static final String googlePostFix = " - Google 검색";
     private static final String naverPostFix = " : 네이버 통합검색";
     private String currentUserName = null;
-    private String currentKeyword = null;
+    private HashOperations<String, String, TabUrl> hashOperations;
     private Logger logger = LoggerFactory.getLogger(CollectorService.class);
 
-    @Autowired
-    private HttpSession session;
-    @Autowired
-    private HistoryRepository historyRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private final HistoryRepository historyRepository;
+    private final UserRepository userRepository;
+    private final RedisTemplate<String, TabUrl> redisTemplate;
 
-    public void saveHistory(List<HistoryRequestDto> historyRequestDtoList, String userName) {
+    public CollectorService(HistoryRepository historyRepository, UserRepository userRepository, RedisTemplate<String, TabUrl> redisTemplate) {
+        this.historyRepository = historyRepository;
+        this.userRepository = userRepository;
+        this.redisTemplate = redisTemplate;
+        hashOperations = redisTemplate.opsForHash();
+    }
+
+    public void saveHistory(HistoryRequestDto requestDto, String userName) {
         currentUserName = userName;
-        User currentUser = userRepository.findByName(userName)
-                .orElseThrow(() -> new IllegalArgumentException("User Not Founded!"));
-        List<History> currentUserHistoryList = currentUser.getHistoryList();
 
-        historyRequestDtoList.forEach( historyRequestDto -> {
-                if (isTrigger(historyRequestDto.getTitle())) {
-                    saveTriggerKeyword(historyRequestDto, currentUserHistoryList);
-                    setCurrentKeyword(parseKeyword(historyRequestDto.getTitle()));
-                } else {
-                    saveUrl(historyRequestDto,currentUserHistoryList);
-                }
-            }
-        );
-        userRepository.save(currentUser);
-        currentUserHistoryList.forEach(history -> historyRepository.save(history));
-        session.setAttribute(userName, currentKeyword);
-    }
+        if (hasKeyword(requestDto) && isNewKeywordTrigger(requestDto)) {
+            logger.warn("New Keyword Trigger");
+            saveHistoryToMainDB(requestDto);
+            deleteHistoryInRedis(requestDto);
+            saveNewHistoryInRedis(requestDto);
 
-    private void saveTriggerKeyword(HistoryRequestDto historyRequestDto, List<History> historyList) {
-        if (historyList.stream().noneMatch(h -> h.getKeyword().equals(parseKeyword(historyRequestDto.getTitle())))) {
-            logger.warn("here? " + historyRequestDto.getTitle());
-            historyList.add(dtoToHistory(historyRequestDto));
-        }
-    }
-
-    private void saveUrl(HistoryRequestDto historyRequestDto, List<History> historyList) {
-        String keyword = getCurrentKeyword();
-        logger.warn("Current Keyword? " + keyword );
-        historyList.stream().filter(h -> h.getKeyword().equals(keyword))
-                            .forEach(h -> h.addUrl(Url.builder()
-                                                      .address(historyRequestDto.getUserUrl())
-                                                      .visitedTime(convertToDate(historyRequestDto.getLastVisitTime()))
-                                                      .build()));
-    }
-
-    private String getCurrentKeyword() {
-        if (currentKeyword != null) {
-            return currentKeyword;
+        } else if (hasKeyword(requestDto))  {
+            logger.warn("Has Keyword");
+            saveNewHistoryInRedis(requestDto);
         } else {
-            return String.valueOf(session.getAttribute(currentUserName));
+            logger.warn("Common Url");
+            String redisId  = getRedisId(requestDto);
+            String hashKey = getHashKey(requestDto);
+            if (!hashOperations.hasKey(redisId, hashKey)) {
+                logger.warn("Common Url not duplicate");
+                hashOperations.put(getRedisId(requestDto), getHashKey(requestDto), getNewUrl(requestDto));
+            } else {
+                logger.warn("Common Url duplicate");
+                TabUrl url = hashOperations.get(redisId,hashKey);
+                hashOperations.delete(redisId,hashKey);
+                TabUrl updatedUrl = updateUrl(url, requestDto);
+                hashOperations.put(redisId, hashKey, updatedUrl);
+            }
+        }
+   }
+
+    private TabUrl updateUrl(TabUrl url, HistoryRequestDto requestDto) {
+        logger.warn("Before : " + url.getVisitedCount().toString());
+        url.setVisitedCount(url.getVisitedCount()+1);
+        logger.warn("After : " + url.getVisitedCount().toString());
+
+        url.setVisitedTime(requestDto.getVisitedTime());
+        url.setStayedTime(requestDto.getStayedTime());
+        return url;
+    }
+
+    private TabUrl getNewUrl(HistoryRequestDto requestDto) {
+        return TabUrl.builder()
+                .address(requestDto.getUrl())
+                .keyword(getCurrentKeyword(getRedisId(requestDto)))
+                .stayedTime(requestDto.getStayedTime())
+                .visitedCount(1)
+                .visitedTime(requestDto.getVisitedTime())
+                .build();
+    }
+
+    private TabUrl getNewTrigger(HistoryRequestDto requestDto) {
+        return TabUrl.builder()
+                .address(requestDto.getUrl())
+                .keyword(parseKeyword(requestDto.getTitle()))
+                .stayedTime(requestDto.getStayedTime())
+                .visitedCount(1)
+                .visitedTime(requestDto.getVisitedTime())
+                .build();
+    }
+
+    private void saveNewHistoryInRedis(HistoryRequestDto requestDto) {
+        hashOperations.put(getRedisId(requestDto),getHashKey(requestDto), getNewTrigger(requestDto));
+    }
+
+    private void deleteHistoryInRedis(HistoryRequestDto requestDto) {
+        String redisId = getRedisId(requestDto);
+        hashOperations.keys(redisId).forEach(k -> hashOperations.delete(redisId, k));
+    }
+
+    private void saveHistoryToMainDB(HistoryRequestDto requestDto) {
+        User currentUser = userRepository.findByName(currentUserName)
+                .orElseThrow(() -> new IllegalArgumentException("User Not Founded!"));
+        String redisId = getRedisId(requestDto);
+
+        List<History> historyList = currentUser.getHistoryList().stream()
+                .filter( h -> h.getKeyword().equals(getCurrentKeyword(redisId)))
+                .collect(Collectors.toList());
+
+        if (historyList.size() == 1) {
+            logger.warn("exist history in mongodb");
+            History previousHistory  = historyList.get(0);
+            History updatedHistory = updateUrlInMainDB(previousHistory, redisId);
+
+            historyRepository.save(updatedHistory);
+            userRepository.save(currentUser);
+        } else {
+            logger.warn("new history in mongodb");
+            History newHistory = saveNewUrlInMainDB(redisId);
+            currentUser.addHistory(newHistory);
+
+            historyRepository.save(newHistory);
+            userRepository.save(currentUser);
         }
     }
 
-    private void setCurrentKeyword(String keyword) {
-        currentKeyword = keyword;
+    private History saveNewUrlInMainDB(String redisId) {
+        History newHistory = History.builder().keyword(getCurrentKeyword(redisId)).id(getObjectId()).build();
+        hashOperations.keys(redisId).stream()
+                .map(address -> hashOperations.get(redisId, address))
+                .map(this::dtoToUrl)
+                .forEach(newHistory::addUrl);
+
+        return newHistory;
+    }
+    private History updateUrlInMainDB(History history, String redisId) {
+        List<Url> newUrls = hashOperations.keys(redisId).stream()
+                                    .map(address -> hashOperations.get(redisId, address))
+                                    .map(this::dtoToUrl)
+                                    .peek(url -> {
+                                        if (isVisitedUrl(history.getUrls(),url)) {
+                                            url.addVisitedCount(getCurrentVisitedCount(history.getUrls(), url));
+                                        }})
+                                    .collect(Collectors.toList());
+        history.getUrls().removeIf(url -> isVisitedUrl(newUrls, url));
+
+        newUrls.forEach(history::addUrl);
+        return history;
     }
 
-    private History dtoToHistory(HistoryRequestDto historyRequestDto) {
-        return History.builder()
-                        .id(getObjectId())
-                        .keyword(parseKeyword(historyRequestDto.getTitle()))
-                        .build();
+    private Integer getCurrentVisitedCount(List<Url> urls, Url url) {
+        return urls.stream().filter(u -> u.getAddress().equals(url.getAddress()))
+        .map(Url::getVisitedCount).collect(Collectors.toList()).get(0);
     }
 
-    private Url dtoToUrl(HistoryRequestDto dto) {
+    private boolean isVisitedUrl(List<Url> urls, Url currentUrl) {
+        return urls.stream().anyMatch(u -> u.getAddress().equals(currentUrl.getAddress()));
+    }
+
+    private String getCurrentKeyword(String redisId) {
+        return hashOperations.keys(redisId).stream()
+                                            .findAny()
+                                            .map( k -> hashOperations.get(redisId,k))
+                                            .map(TabUrl::getKeyword).orElseThrow(() -> new IllegalArgumentException("Can't Know Keyword. It's Discard..."));
+    }
+
+    private boolean isNewKeywordTrigger(HistoryRequestDto requestDto) {
+        return hashOperations.entries(getRedisId(requestDto)).size() > 0;
+    }
+
+    private String getRedisId(HistoryRequestDto requestDto) {
+        return RedisId.builder().tabId(requestDto.getTabId()).userName(currentUserName).build().getId();
+    }
+    private String getHashKey(HistoryRequestDto requestDto) {
+        return requestDto.getUrl();
+    }
+
+    private Url dtoToUrl(TabUrl dto) {
         return Url.builder()
-                    .address(dto.getUserUrl())
-                    .visitedTime(convertToDate(dto.getLastVisitTime()))
+                    .address(dto.getAddress())
+                    .visitedTime(convertToDate(dto.getVisitedTime()))
+                    .stayedTime(convertToDate(dto.getStayedTime()))
+                    .visitedCount(dto.getVisitedCount())
                     .build();
     }
 
-    private boolean isTrigger(String title) {
-        return isGoogleSearchForm(title) || isNaverSearchForm(title);
+    private boolean hasKeyword(HistoryRequestDto requestDto) {
+        return isGoogleSearchForm(requestDto.getTitle()) || isNaverSearchForm(requestDto.getTitle());
     }
 
     private boolean isGoogleSearchForm(String title) {

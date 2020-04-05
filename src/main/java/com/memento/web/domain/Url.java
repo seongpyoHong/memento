@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.redis.core.RedisHash;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Id;
@@ -31,6 +32,10 @@ public class Url implements Serializable {
         this.visitedTime = visitedTime;
         this.stayedTime = stayedTime;
         this.visitedCount = visitedCount;
+    }
+
+    public void addVisitedCount(Integer count) {
+        this.visitedCount += count;
     }
 
 }

@@ -28,4 +28,8 @@ public class User {
     public void addHistory(History history) {
         this.historyList.add(history);
     }
+
+    public void updateHistoryList(List<History> historyList) {
+        this.historyList = historyList;
+    }
 }
