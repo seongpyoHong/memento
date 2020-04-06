@@ -1,4 +1,4 @@
-package com.memento.web.common;
+package com.memento.web.domain;
 
 import lombok.*;
 import java.io.Serializable;

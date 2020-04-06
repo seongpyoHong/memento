@@ -100,7 +100,6 @@ class SearchServiceTest {
         userRepository.deleteAll();
     }
 
-    // service test
 //    @Test
 //    void 키워드_정보_페이지별_반환() {
 //        List<HistoryResponseDto> responseDtos = searchService.findAll(user, 1L);
@@ -113,7 +112,7 @@ class SearchServiceTest {
 //        assertEquals(responseDtos1.get(1).getKeyword(), "test4");
 //        assertEquals(responseDtos2.size(), 0);
 //    }
-
+//
 //    @Test
 //    void 검색어_페이지별_반환() {
 //        List<HistoryResponseDto> responseDtos = searchService.findAllByKeyword(user, "test", 1L);
@@ -125,7 +124,7 @@ class SearchServiceTest {
 //        assertEquals(responseDtos1.size(), 1);
 //        assertEquals(responseDtos1.get(0).getKeyword(), "test4");
 //    }
-
+//
 //    @Test
 //    void 정렬_테스트() {
 //        Pageable pageable = PageRequest.of(2, 2); // page request 생성

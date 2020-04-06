@@ -1,7 +1,7 @@
 package com.memento.web.service;
 
 import com.memento.web.common.RedisId;
-import com.memento.web.common.TabUrl;
+import com.memento.web.domain.TabUrl;
 import com.memento.web.domain.*;
 import com.memento.web.dto.HistoryRequestDto;
 import lombok.extern.slf4j.Slf4j;

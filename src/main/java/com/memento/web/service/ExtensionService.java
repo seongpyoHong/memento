@@ -1,6 +1,6 @@
 package com.memento.web.service;
 
-import com.memento.web.common.TabUrl;
+import com.memento.web.domain.TabUrl;
 import com.memento.web.domain.*;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;

@@ -1,6 +1,6 @@
 package com.memento.web.service;
 
-import com.memento.web.common.TabUrl;
+import com.memento.web.domain.TabUrl;
 import com.memento.web.domain.*;
 import com.memento.web.dto.HistoryRequestDto;
 import static org.junit.jupiter.api.Assertions.assertEquals;

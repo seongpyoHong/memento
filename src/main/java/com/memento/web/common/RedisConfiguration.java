@@ -1,5 +1,6 @@
 package com.memento.web.common;
 
+import com.memento.web.domain.TabUrl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
