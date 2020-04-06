@@ -37,15 +37,15 @@ public class CollectorService {
     }
 
     public void saveHistory(HistoryRequestDto requestDto, String userName) {
-        currentUserName = userName;
+            currentUserName = userName;
 
-        if (hasKeyword(requestDto) && isNewKeywordTrigger(requestDto)) {
-            logger.warn("New Keyword Trigger");
-            saveHistoryToMainDB(requestDto);
-            deleteHistoryInRedis(requestDto);
-            saveNewHistoryInRedis(requestDto);
+            if (hasKeyword(requestDto) && isNewKeywordTrigger(requestDto)) {
+                logger.warn("New Keyword Trigger");
+                saveHistoryToMainDB(requestDto);
+                deleteHistoryInRedis(requestDto);
+                saveNewHistoryInRedis(requestDto);
 
-        } else if (hasKeyword(requestDto))  {
+            } else if (hasKeyword(requestDto))  {
             logger.warn("Has Keyword");
             saveNewHistoryInRedis(requestDto);
         } else {
