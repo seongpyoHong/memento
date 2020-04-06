@@ -63,6 +63,7 @@ public class SearchService {
     }
 
     public <T> Page<T> getPagedResult(List<T> responseDtos, Pageable pageable){
+        Integer totalSize = responseDtos.size();
         int skip = (pageable.getPageNumber()) * pageable.getPageSize();
         int limit = pageable.getPageSize() + skip;
         int totalElements = responseDtos.size();
@@ -74,7 +75,7 @@ public class SearchService {
         }
         responseDtos = responseDtos.subList(skip , limit);
 
-        return new PageImpl<>(responseDtos, pageable, responseDtos.size());
+        return new PageImpl<>(responseDtos, pageable, totalSize);
     }
 
     // ------------------- ByUser
@@ -91,7 +92,7 @@ public class SearchService {
 
     // ------------------- Keyword Detail
     public Page<Url> findOneHistory(String username, String search, SortType type, Pageable pageable) {
-        HistoryResponseDto historyResponseDto = findAllByNameWithPageination(username, pageable).getContent().stream()
+        HistoryResponseDto historyResponseDto = findAllByName(username).stream()
                 .filter(dto -> dto.getKeyword().equals(search)).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Keyword Not Found!"));
 

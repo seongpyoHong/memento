@@ -1,33 +1,29 @@
 package com.memento.web.service;
 
-import com.memento.web.common.RedisId;
 import com.memento.web.common.TabUrl;
 import com.memento.web.domain.*;
-import com.memento.web.dto.HistoryRequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpSession;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class UserService {
+public class ExtensionService {
     private HashOperations<String, String, TabUrl> hashOperations;
-    private Logger logger = LoggerFactory.getLogger(UserService.class);
+    private Logger logger = LoggerFactory.getLogger(ExtensionService.class);
 
     private final UserRepository userRepository;
     private final HistoryRepository historyRepository;
     private final RedisTemplate<String, TabUrl> redisTemplate;
 
-    public UserService(UserRepository userRepository, HistoryRepository historyRepository, RedisTemplate<String, TabUrl> redisTemplate) {
+    public ExtensionService(UserRepository userRepository, HistoryRepository historyRepository, RedisTemplate<String, TabUrl> redisTemplate) {
         this.userRepository = userRepository;
         this.historyRepository = historyRepository;
         this.redisTemplate = redisTemplate;

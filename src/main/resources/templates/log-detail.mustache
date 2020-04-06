@@ -1,0 +1,52 @@
+{{>layout/header}}
+
+<meta name="totalPage" content={{urlList.getTotalPages}} />
+<meta name="currentPage" content={{urlList.getNumber}} />
+<meta name="hasNext" content={{urlList.hasNext}} />
+<meta name="hasPrev" content={{urlList.hasPrevious}} />
+<meta name="isFirst" content={{urlList.isFirst}} />
+<meta name="isLast" content={{urlList.isLast}} />
+
+<div class="col-md-12">
+    <h2>Keyword : {{keyword}}</h2>
+    <!-- 목록 출력 -->
+    <table id = "history">
+        <thead class="thead-strong">
+        <tr>
+            <th>Url Address</th>
+            <th>Visited Time</th>
+            <th>Stayed Time</th>
+            <th>Visited Count</th>
+        </tr>
+        </thead>
+        <tbody id="tbody">
+            {{#urlList}}
+                <tr>
+                    <td><a href="{{address}}">{{address}} </a></td>
+                    <td>{{visitedTime}} </td>
+                    <td>{{stayedTime}} </td>
+                    <td>{{visitedCount}} </td>
+                </tr>
+            {{/urlList}}
+        </tbody>
+    </table>
+
+    <div class="dropdown" style=" float: left; width: 42%; padding:10px 10px 10px 0px;">
+        <button class="dropbtn">Sort</button>
+        <div class="dropdown-content">
+            <a href="/log-detail?name={{userName}}&keyword={{keyword}}&page=0&type=RECENT">Recent</a>
+            <a href="/log-detail?keyword={{keyword}}&name={{userName}}&page=0&type=VISITCOUNT">Visit Count</a>
+            <a href="/log-detail?keyword={{keyword}}&name={{userName}}&page=0&type=STAYING">Stayed Time</a>
+        </div>
+    </div>
+    <div class="pagination" style=" float: left; width: 25%; padding: 10px; text-align: right">
+        <script src = "/js/app/pagination.js">paging();</script>
+    </div>
+
+    <div class="text-input" style="float: left; width: 33%; padding:10px; text-align: right">
+        <input type="text" id = "keyword" placeholder="Search..">
+        <input type="hidden" id = "userName" value={{userName}}>
+        <button type="button" class="btn btn-primary" id="btn-search">Search</button>
+    </div>
+</div>
+{{>layout/footer}}

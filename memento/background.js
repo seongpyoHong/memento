@@ -67,6 +67,12 @@ chrome.extension.onConnect.addListener(function(port) {
             sendStopWorker();
             turnoff = true;
         }
+        else if (msg == 'GetUser'){
+            console.log('유저 정보 전달');
+            chrome.identity.getProfileUserInfo(function(userInfo) {
+                port.postMessage(userInfo.email);
+            });
+        }
     });
 });
 
