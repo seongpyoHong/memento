@@ -5,7 +5,6 @@ const naverPostFix = " : 네이버 통합검색";
 var tabAndTitles = [];
 //TODO:
 // 1. StayedTime 측정 - 탭의 내용이 변경될 때 마다 측정해서 보내
-// 2. Close Window Event 등록 - 완료
 
 chrome.windows.onRemoved.addListener( function(closedWindowId) {
    if (turnoff) { return }
@@ -14,10 +13,13 @@ chrome.windows.onRemoved.addListener( function(closedWindowId) {
 
 // tab이 닫힐 때 tabAndTitles 객체에서 tabid에 관한 요소를 지운다
 chrome.tabs.onRemoved.addListener( function(tabId, removeInfo) {
-    const itemToFind = tabAndTitles.find( function(item) 
-        {return item.id === tabId})
+    console.log('탭이 닫힙니다.')
+    const itemToFind = tabAndTitles.find( function(item) { return item.id === tabId})
     const idx = tabAndTitles.indexOf(itemToFind); 
-    if (idx > -1) tabAndTitles.splice(idx, 1);
+    if (idx > -1) {
+        console.log('탭 정보 삭제')
+        tabAndTitles.splice(idx, 1);
+    }
 })
 
 chrome.tabs.onUpdated.addListener( function(tabId, changeInfo, tab) {
@@ -25,11 +27,16 @@ chrome.tabs.onUpdated.addListener( function(tabId, changeInfo, tab) {
 
     if (changeInfo.status == 'complete' && tab.status == 'complete' && tab.url != undefined) {
         // tab title이  검색 forme인지 여부 검사
-        if (tab.title.lastIndexOf(googlePostFix) > -1 || tab.title.lastIndexOf(naverPostFix) > -1){
+        if (tab.title.indexOf(googlePostFix) > -1 || tab.title.indexOf(naverPostFix) > -1){
+            
+            console.log('검색 폼입니다.')
             // 검색 폼일 경우 GoBack인지 테스트한다
-            if (isGoBack(tabId, tab.title))
+            if (isGoBack(tabId, tab.title)){
+                console.log('뒤로가기 입니다.')
                 // GoBack으로 판명되면 이하 수행하지 않고 종료
                 return;
+            }
+            console.log('뒤로가기가 아닙니다');
         }
         console.log("Now login user " + user);
         console.log("Now tab id " + tabId);
@@ -121,5 +128,6 @@ function isGoBack(id, title) {
             return true;
         }
     }
+    tabAndTitles.push(tabAndTitle);
     return false;
 }

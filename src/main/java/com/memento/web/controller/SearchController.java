@@ -20,20 +20,6 @@ public class SearchController {
 
     @GetMapping("/log")
     public String log(@PathParam ("page") Long page, SortType type, Model model) {
-        if(type==SortType.DEFAULT)
-            model.addAttribute("historyList",
-                    searchService.findAll("test-user", page));
-        else if(type==SortType.RECENT)
-            model.addAttribute("historyList",
-                    searchService.findAllBySortedVisitedTime("test-user", page));
-        else if(type==SortType.VISITCOUNT)
-            model.addAttribute("historyList",
-                    searchService.findAllBySortedVisitedCount("test-user", page));
-        else if(type==SortType.STAYING)
-            model.addAttribute("historyList",
-                    searchService.findAllBySortedStayedTime("test-user", page));
-        else
-            System.out.println("에러처리 필요");
         return "log";
     }
 
@@ -41,20 +27,6 @@ public class SearchController {
     public String keywordLog(@RequestParam("page") Long page,
                            @RequestParam("radiobutton") SortType type,
                            @PathVariable String keyword, Model model) {
-        if(type==SortType.DEFAULT)
-            model.addAttribute("historyList",
-                    searchService.findAllByKeyword("test-user", keyword, page));
-        else if(type==SortType.RECENT)
-            model.addAttribute("historyList",
-                    searchService.findAllByKeywordVisitedTime("test-user", keyword, page));
-        else if(type==SortType.VISITCOUNT)
-            model.addAttribute("historyList",
-                    searchService.findAllByKeywordVisitedCount("test-user", keyword, page));
-        else if(type==SortType.STAYING)
-            model.addAttribute("historyList",
-                    searchService.findAllByKeywordStayedTime("test-user", keyword, page));
-        else
-            System.out.println("에러처리 필요");
         return "log-detail";
     }
 }
