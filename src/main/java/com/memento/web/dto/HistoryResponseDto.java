@@ -17,12 +17,14 @@ import java.util.List;
 public class HistoryResponseDto implements Serializable{
     private String id;
     private List<Url> urls = new ArrayList<>();
+    private Integer urlCount;
     private String keyword;
 
     public HistoryResponseDto(History entity){
         this.id = entity.getId();
         this.urls = entity.getUrls();
         this.keyword = entity.getKeyword();
+        this.urlCount = this.urls.size();
     }
 
     public void sortByVisitedCount() {
