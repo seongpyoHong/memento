@@ -126,26 +126,22 @@ class SearchServiceTest {
 //        assertEquals(responseDtos1.get(0).getKeyword(), "test4");
 //    }
 
-    @Test
-    void 정렬_테스트() {
-        Pageable pageable = PageRequest.of(2, 2); // page request 생성
-
-        Page<HistoryResponseDto> responseDtos1 = searchService.findAllByNameWithPageination(user, SortType.RECENT, pageable);
-//        Page<HistoryResponseDto> responseDtos2 = searchService.findAllByNameWithPageination(user, SortType.VISITCOUNT, pageable);
-//        Page<HistoryResponseDto> responseDtos3 = searchService.findAllByNameWithPageination(user, SortType.STAYING, pageable);
-
-        System.out.println(responseDtos1.isFirst());
-        System.out.println(responseDtos1.isLast());
-        System.out.println(responseDtos1.getTotalPages());
-        System.out.println(responseDtos1.getTotalElements());
-        System.out.println(responseDtos1.getContent());
-
-        Page<HistoryResponseDto> responseDtos4 = searchService.findAllByKeywordWithPageination(user, "test", SortType.RECENT, pageable);
-//        Page<HistoryResponseDto> responseDtos5 = searchService.findAllByKeywordWithPageination(user, "test", SortType.VISITCOUNT, pageable);
-//        Page<HistoryResponseDto> responseDtos6 = searchService.findAllByKeywordWithPageination(user, "test", SortType.STAYING, pageable);
-
-        System.out.println(responseDtos4.getTotalPages());
-        System.out.println(responseDtos4.getTotalElements());
-        System.out.println(responseDtos4.getContent());
-    }
+//    @Test
+//    void 정렬_테스트() {
+//        Pageable pageable = PageRequest.of(2, 2); // page request 생성
+//
+//        Page<HistoryResponseDto> responseDtos1 = searchService.findAllByNameWithPageination(user, SortType.RECENT, pageable);
+//
+//        System.out.println(responseDtos1.isFirst());
+//        System.out.println(responseDtos1.isLast());
+//        System.out.println(responseDtos1.getTotalPages());
+//        System.out.println(responseDtos1.getTotalElements());
+//        System.out.println(responseDtos1.getContent());
+//
+//        Page<HistoryResponseDto> responseDtos4 = searchService.findAllByKeywordWithPageination(user, "test", SortType.RECENT, pageable);
+//
+//        System.out.println(responseDtos4.getTotalPages());
+//        System.out.println(responseDtos4.getTotalElements());
+//        System.out.println(responseDtos4.getContent());
+//    }
 }

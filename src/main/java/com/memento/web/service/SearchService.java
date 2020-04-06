@@ -8,12 +8,10 @@ import com.memento.web.dto.UserResponseDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
@@ -22,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("Deprecated")
 @Service
 public class SearchService {
     private Logger logger = LoggerFactory.getLogger(SearchController.class);
@@ -32,22 +29,18 @@ public class SearchService {
 
 
     //@Cacheable(value = "all-keyword")
-    public List<HistoryResponseDto> findAllByName(String username) {
+    private List<HistoryResponseDto> findAllByName(String username) {
         List<AggregationOperation> list = new ArrayList<AggregationOperation>();
         list.add(Aggregation.match(Criteria.where("name").is(username)));
         list.add(Aggregation.unwind("historyList"));
 
         TypedAggregation<User> agg = Aggregation.newAggregation(User.class, list);
 
-        return mongoOperations.aggregate(agg, User.class, UserResponseDto.class)
-                .getMappedResults().stream()
-                .map(UserResponseDto::getHistoryList)
-                .map(HistoryResponseDto::new)
-                .collect(Collectors.toList());
+        return getAggregationResult(agg);
     }
 
     //@Cacheable(value = "include-keyword")
-    public List<HistoryResponseDto> findAllByKeyword(String username, String search){
+    private List<HistoryResponseDto> findAllByKeyword(String username, String search){
         List<AggregationOperation> list = new ArrayList<AggregationOperation>();
         list.add(Aggregation.match(Criteria.where("name").is(username)));
         list.add(Aggregation.unwind("historyList"));
@@ -58,6 +51,10 @@ public class SearchService {
 
         TypedAggregation<User> agg = Aggregation.newAggregation(User.class, list);
 
+        return getAggregationResult(agg);
+    }
+
+    private List<HistoryResponseDto> getAggregationResult(TypedAggregation<User> agg) {
         return mongoOperations.aggregate(agg, User.class, UserResponseDto.class)
                 .getMappedResults().stream()
                 .map(UserResponseDto::getHistoryList)
@@ -65,20 +62,7 @@ public class SearchService {
                 .collect(Collectors.toList());
     }
 
-    // ------------------- ByUser
-    public Page<HistoryResponseDto> findAllByNameWithPageination(String username, SortType type, Pageable pageable){
-        List<HistoryResponseDto> responseDtos = findAllByName(username);
-        return getPagedResult(responseDtos, type, pageable);
-    }
-
-    // ------------------- ByKeyword
-    public Page<HistoryResponseDto> findAllByKeywordWithPageination(String username, String search, SortType type, Pageable pageable){
-        List<HistoryResponseDto> responseDtos = findAllByKeyword(username, search);
-        return getPagedResult(responseDtos, type, pageable);
-    }
-
-    public Page<HistoryResponseDto> getPagedResult(List<HistoryResponseDto> responseDtos, SortType type, Pageable pageable){
-        // pageable = PageRequest.of(requestIndex, 10); // page request 생성
+    public <T> Page<T> getPagedResult(List<T> responseDtos, Pageable pageable){
         int skip = (pageable.getPageNumber()) * pageable.getPageSize();
         int limit = pageable.getPageSize() + skip;
         int totalElements = responseDtos.size();
@@ -88,23 +72,37 @@ public class SearchService {
             else
                 limit = totalElements;
         }
-        if (type == SortType.DEFAULT) {
-            responseDtos = responseDtos.subList(skip , limit);
-        } else if (type == SortType.STAYING) {
-            responseDtos = responseDtos.subList(skip , limit);
-            responseDtos.forEach(HistoryResponseDto::sortByStayedtime);
-        } else if (type == SortType.VISITCOUNT) {
-            responseDtos = responseDtos.subList(skip , limit);
-            responseDtos.forEach(HistoryResponseDto::sortByVisitedCount);
-        } else if (type == SortType.RECENT) {
-            responseDtos = responseDtos.subList(skip , limit);
-            responseDtos.forEach(HistoryResponseDto::sortByVisitedtime);
-        } else {return null;}
+        responseDtos = responseDtos.subList(skip , limit);
 
-        List<HistoryResponseDto> finalResponseDtos = responseDtos;
-        System.out.println(pageable.toOptional()
-                .map(Pageable::getOffset)
-                .get());
         return new PageImpl<>(responseDtos, pageable, responseDtos.size());
+    }
+
+    // ------------------- ByUser
+    public Page<HistoryResponseDto> findAllByNameWithPageination(String username, Pageable pageable){
+        List<HistoryResponseDto> responseDtos = findAllByName(username);
+        return getPagedResult(responseDtos, pageable);
+    }
+
+    // ------------------- ByKeyword
+    public Page<HistoryResponseDto> findAllByKeywordWithPageination(String username, String search, Pageable pageable){
+        List<HistoryResponseDto> responseDtos = findAllByKeyword(username, search);
+        return getPagedResult(responseDtos, pageable);
+    }
+
+    // ------------------- Keyword Detail
+    public Page<Url> findOneHistory(String username, String search, SortType type, Pageable pageable) {
+        HistoryResponseDto historyResponseDto = findAllByNameWithPageination(username, pageable).getContent().stream()
+                .filter(dto -> dto.getKeyword().equals(search)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Keyword Not Found!"));
+
+        if (type.equals(SortType.STAYING)) {
+            historyResponseDto.sortByStayedtime();
+        } else if (type.equals(SortType.RECENT)) {
+            historyResponseDto.sortByVisitedtime();
+        } else if (type.equals(SortType.VISITCOUNT)) {
+            historyResponseDto.sortByVisitedCount();
+        }
+
+        return getPagedResult(historyResponseDto.getUrls(), pageable);
     }
 }
