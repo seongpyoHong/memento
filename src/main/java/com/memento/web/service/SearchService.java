@@ -8,6 +8,7 @@ import com.memento.web.dto.UserResponseDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,7 @@ public class SearchService {
     private MongoOperations mongoOperations;
 
 
-    //@Cacheable(value = "all-keyword")
+    @Cacheable(value = "all-keyword")
     private List<HistoryResponseDto> findAllByName(String username) {
         List<AggregationOperation> list = new ArrayList<AggregationOperation>();
         list.add(Aggregation.match(Criteria.where("name").is(username)));
@@ -39,7 +40,7 @@ public class SearchService {
         return getAggregationResult(agg);
     }
 
-    //@Cacheable(value = "include-keyword")
+    @Cacheable(value = "include-keyword")
     private List<HistoryResponseDto> findAllByKeyword(String username, String search){
         List<AggregationOperation> list = new ArrayList<AggregationOperation>();
         list.add(Aggregation.match(Criteria.where("name").is(username)));

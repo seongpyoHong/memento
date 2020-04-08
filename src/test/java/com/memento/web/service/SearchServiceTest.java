@@ -100,47 +100,62 @@ class SearchServiceTest {
         userRepository.deleteAll();
     }
 
-//    @Test
-//    void 키워드_정보_페이지별_반환() {
-//        List<HistoryResponseDto> responseDtos = searchService.findAll(user, 1L);
-//        List<HistoryResponseDto> responseDtos1 = searchService.findAll(user, 2L);
-//        List<HistoryResponseDto> responseDtos2 = searchService.findAll(user, 3L);
-//
-//        assertEquals(responseDtos.size(), 2);
-//        assertEquals(responseDtos.get(1).getKeyword(), "test2");
-//        assertEquals(responseDtos1.size(), 2);
-//        assertEquals(responseDtos1.get(1).getKeyword(), "test4");
-//        assertEquals(responseDtos2.size(), 0);
-//    }
-//
-//    @Test
-//    void 검색어_페이지별_반환() {
-//        List<HistoryResponseDto> responseDtos = searchService.findAllByKeyword(user, "test", 1L);
-//        List<HistoryResponseDto> responseDtos1 = searchService.findAllByKeyword(user, "test", 2L);
-//
-//        System.out.println(responseDtos);
-//        assertEquals(responseDtos.size(), 2);
-//        assertEquals(responseDtos.get(0).getKeyword(), "test1");
-//        assertEquals(responseDtos1.size(), 1);
-//        assertEquals(responseDtos1.get(0).getKeyword(), "test4");
-//    }
-//
-//    @Test
-//    void 정렬_테스트() {
-//        Pageable pageable = PageRequest.of(2, 2); // page request 생성
-//
-//        Page<HistoryResponseDto> responseDtos1 = searchService.findAllByNameWithPageination(user, SortType.RECENT, pageable);
-//
-//        System.out.println(responseDtos1.isFirst());
-//        System.out.println(responseDtos1.isLast());
-//        System.out.println(responseDtos1.getTotalPages());
-//        System.out.println(responseDtos1.getTotalElements());
-//        System.out.println(responseDtos1.getContent());
-//
-//        Page<HistoryResponseDto> responseDtos4 = searchService.findAllByKeywordWithPageination(user, "test", SortType.RECENT, pageable);
-//
-//        System.out.println(responseDtos4.getTotalPages());
-//        System.out.println(responseDtos4.getTotalElements());
-//        System.out.println(responseDtos4.getContent());
-//    }
+    @Test
+    void 로그_페이지별_반환() {
+        Pageable pageable1 = PageRequest.of(1, 2);
+        Pageable pageable2 = PageRequest.of(1, 3);
+        Pageable pageable3 = PageRequest.of(1, 4);
+        Pageable pageable4 = PageRequest.of(2, 3);
+        Page<HistoryResponseDto> responseDtos1 = searchService.findAllByNameWithPageination(user, pageable1);
+        Page<HistoryResponseDto> responseDtos2 = searchService.findAllByNameWithPageination(user, pageable2);
+        Page<HistoryResponseDto> responseDtos3 = searchService.findAllByNameWithPageination(user, pageable3);
+        Page<HistoryResponseDto> responseDtos4 = searchService.findAllByNameWithPageination(user, pageable4);
+
+        assertEquals(responseDtos1.getTotalElements(), 6);
+        assertEquals(responseDtos1.getTotalPages(), 3);
+        assertTrue(responseDtos2.isLast());
+        assertEquals(responseDtos2.getContent().size(), 3);
+        assertEquals(responseDtos2.getContent().get(1).getKeyword(), "123test");
+        assertEquals(responseDtos3.getContent().size(), 2);
+        assertNull(responseDtos4);
+    }
+
+    @Test
+    void 검색결과_로그_페이지별_반환() {
+        Pageable pageable1 = PageRequest.of(1, 2);
+        Pageable pageable2 = PageRequest.of(1, 3);
+        Pageable pageable3 = PageRequest.of(1, 4);
+        Pageable pageable4 = PageRequest.of(2, 3);
+        Page<HistoryResponseDto> responseDtos1 = searchService.findAllByKeywordWithPageination(user, "test", pageable1);
+        Page<HistoryResponseDto> responseDtos2 = searchService.findAllByKeywordWithPageination(user, "test", pageable2);
+        Page<HistoryResponseDto> responseDtos3 = searchService.findAllByKeywordWithPageination(user, "test", pageable3);
+        Page<HistoryResponseDto> responseDtos4 = searchService.findAllByKeywordWithPageination(user, "test", pageable4);
+
+        assertEquals(responseDtos1.getTotalElements(), 5);
+        assertEquals(responseDtos1.getTotalPages(), 3);
+        assertTrue(responseDtos2.isLast());
+        assertEquals(responseDtos2.getContent().size(), 2);
+        assertEquals(responseDtos2.getContent().get(1).getKeyword(), "test45");
+        assertEquals(responseDtos3.getContent().size(), 1);
+        assertNull(responseDtos4);
+    }
+
+    @Test
+    void 정렬_테스트() {
+        Pageable pageable = PageRequest.of(0, 2); // page request 생성
+
+        Page<Url> paggedUrl= searchService.findOneHistory(user, "test45", SortType.DEFAULT, pageable);
+        Page<Url> paggedUrl1= searchService.findOneHistory(user, "test45", SortType.RECENT, pageable);
+        Page<Url> paggedUrl2= searchService.findOneHistory(user, "test45", SortType.VISITCOUNT, pageable);
+        Page<Url> paggedUrl3= searchService.findOneHistory(user, "test45", SortType.STAYING, pageable);
+
+        assertEquals(paggedUrl.getTotalPages(), 2);
+        assertEquals(paggedUrl.getTotalElements(), 3);
+        assertEquals(paggedUrl.getContent().size(), 2);
+        assertTrue(paggedUrl.isFirst());
+
+        assertEquals(paggedUrl1.getContent().get(0).getVisitedCount(), 3);
+        assertEquals(paggedUrl2.getContent().get(0).getVisitedCount(), 5);
+        assertEquals(paggedUrl3.getContent().get(0).getVisitedCount(), 1);
+    }
 }
