@@ -11,11 +11,13 @@ import javax.servlet.http.HttpSession;
 
 @Controller
 public class ExtensionController {
-    @Autowired
-    private ExtensionService extensionService;
+    private final ExtensionService extensionService;
+    private final HttpSession httpSession;
 
-    @Autowired
-    private HttpSession httpSession;
+    public ExtensionController(ExtensionService extensionService, HttpSession httpSession) {
+        this.extensionService = extensionService;
+        this.httpSession = httpSession;
+    }
 
     @PostMapping("/save-user")
     public void saveUser(@RequestParam("name") String name) {
@@ -23,19 +25,16 @@ public class ExtensionController {
         if (httpSession.getAttribute(hashCode.toString()) == null) {
             httpSession.setAttribute(hashCode.toString() , name);
             extensionService.saveUser(hashCode,name);
-            System.out.println("here");
         }
     }
 
     @PostMapping("/close-window")
     public void closeWindow(@RequestParam("name") String name) {
-        System.out.println("Close Window");
         extensionService.saveToMainDB(name);
     }
 
     @PostMapping("/stop-worker")
     public void stopWorker(@RequestParam("name") String name) {
-        System.out.println("Close Window");
         extensionService.saveToMainDB(name);
     }
 }

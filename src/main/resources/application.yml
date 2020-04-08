@@ -5,8 +5,8 @@ spring:
       port: 27017
       authentication-database: admin
       database: mementoDB
-      username: memento
-      password: memento
+#      username: memento
+#      password: memento
   redis:
     host: localhost
     port: 6379
@@ -16,10 +16,11 @@ spring:
     redis:
       flush-mode: on-save
       namespace: spring:session
+  profiles:
+    active: test
+
 logging:
   level:
     root: WARN
     org.springframework.data.mongodb.repository.Query: DEBUG
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
-#  profiles:
-#    active: local

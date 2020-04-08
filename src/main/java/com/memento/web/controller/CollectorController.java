@@ -18,16 +18,13 @@ import java.util.List;
 public class CollectorController {
     private Logger logger = LoggerFactory.getLogger(CollectorController.class);
 
-    @Autowired
-    private CollectorService collectorService;
-
-    @Autowired
-    private UserRepository userRepository;
+    private final CollectorService collectorService;
+    public CollectorController(CollectorService collectorService) {
+        this.collectorService = collectorService;
+    }
 
     @PostMapping("/collect")
     public void collectHistory(@RequestBody HistoryRequestDto historyRequestDto, @RequestParam("name") String name) {
-        logger.info(historyRequestDto.toString());
-        logger.warn(name);
         collectorService.saveHistory(historyRequestDto, name);
     }
 }

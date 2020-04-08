@@ -14,62 +14,69 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class CollectorService {
+    private Logger logger = LoggerFactory.getLogger(CollectorService.class);
+
     private static final String googlePostFix = " - Google 검색";
     private static final String naverPostFix = " : 네이버 통합검색";
     private String currentUserName = null;
-    private HashOperations<String, String, TabUrl> hashOperations;
-    private Logger logger = LoggerFactory.getLogger(CollectorService.class);
 
     private final HistoryRepository historyRepository;
     private final UserRepository userRepository;
     private final RedisTemplate<String, TabUrl> redisTemplate;
+    private final HashOperations<String, String, TabUrl> hashOperations;
 
     public CollectorService(HistoryRepository historyRepository, UserRepository userRepository, RedisTemplate<String, TabUrl> redisTemplate) {
         this.historyRepository = historyRepository;
         this.userRepository = userRepository;
         this.redisTemplate = redisTemplate;
-        hashOperations = redisTemplate.opsForHash();
+        this.hashOperations = redisTemplate.opsForHash();
     }
 
     public void saveHistory(HistoryRequestDto requestDto, String userName) {
-            currentUserName = userName;
+        currentUserName = userName;
+        if (hasKeyword(requestDto) && isNewKeyword(requestDto)) {
+            saveHistoryToMainDB(requestDto);
+            deleteHistoryFromRedis(requestDto);
+            saveHistoryToRedis(requestDto);
 
-            if (hasKeyword(requestDto) && isNewKeywordTrigger(requestDto)) {
-                logger.warn("New Keyword Trigger");
-                saveHistoryToMainDB(requestDto);
-                deleteHistoryInRedis(requestDto);
-                saveNewHistoryInRedis(requestDto);
+        } else if (hasKeyword(requestDto))  {
+            saveHistoryToRedis(requestDto);
 
-            } else if (hasKeyword(requestDto))  {
-            logger.warn("Has Keyword");
-            saveNewHistoryInRedis(requestDto);
         } else {
-            logger.warn("Common Url");
-            String redisId  = getRedisId(requestDto);
-            String hashKey = getHashKey(requestDto);
-            if (!hashOperations.hasKey(redisId, hashKey)) {
-                logger.warn("Common Url not duplicate");
-                hashOperations.put(getRedisId(requestDto), getHashKey(requestDto), getNewUrl(requestDto));
-            } else {
-                logger.warn("Common Url duplicate");
-                TabUrl url = hashOperations.get(redisId,hashKey);
-                hashOperations.delete(redisId,hashKey);
-                TabUrl updatedUrl = updateUrl(url, requestDto);
-                hashOperations.put(redisId, hashKey, updatedUrl);
-            }
+            saveUrlToRedis(requestDto);
         }
    }
 
-    private TabUrl updateUrl(TabUrl url, HistoryRequestDto requestDto) {
-        logger.warn("Before : " + url.getVisitedCount().toString());
-        url.setVisitedCount(url.getVisitedCount()+1);
-        logger.warn("After : " + url.getVisitedCount().toString());
+    private void saveUrlToRedis(HistoryRequestDto requestDto) {
+        if (!isExistedUrl(requestDto)) {
+            addNewUrlInRedis(requestDto);
+        } else {
+            updateUrlInRedis(requestDto);
+        }
+    }
 
+    private void addNewUrlInRedis(HistoryRequestDto requestDto) {
+        hashOperations.put(getRedisId(requestDto), getHashKey(requestDto), getNewUrl(requestDto));
+    }
+    private void updateUrlInRedis(HistoryRequestDto requestDto) {
+        TabUrl url = hashOperations.get(getRedisId(requestDto),getHashKey(requestDto));
+        hashOperations.delete(getRedisId(requestDto),getHashKey(requestDto));
+        TabUrl updatedUrl = updateUrlInfo(Objects.requireNonNull(url), requestDto);
+        hashOperations.put(getRedisId(requestDto), getHashKey(requestDto), updatedUrl);
+    }
+
+    private boolean isExistedUrl(HistoryRequestDto requestDto) {
+        return hashOperations.hasKey(getRedisId(requestDto), getHashKey(requestDto));
+    }
+
+    private TabUrl updateUrlInfo(TabUrl url, HistoryRequestDto requestDto) {
+        url.setVisitedCount(url.getVisitedCount()+1);
         url.setVisitedTime(requestDto.getVisitedTime());
         url.setStayedTime(requestDto.getStayedTime());
         return url;
@@ -85,7 +92,7 @@ public class CollectorService {
                 .build();
     }
 
-    private TabUrl getNewTrigger(HistoryRequestDto requestDto) {
+    private TabUrl getNewKeyword(HistoryRequestDto requestDto) {
         return TabUrl.builder()
                 .address(requestDto.getUrl())
                 .keyword(parseKeyword(requestDto.getTitle()))
@@ -95,11 +102,11 @@ public class CollectorService {
                 .build();
     }
 
-    private void saveNewHistoryInRedis(HistoryRequestDto requestDto) {
-        hashOperations.put(getRedisId(requestDto),getHashKey(requestDto), getNewTrigger(requestDto));
+    private void saveHistoryToRedis(HistoryRequestDto requestDto) {
+        hashOperations.put(getRedisId(requestDto),getHashKey(requestDto), getNewKeyword(requestDto));
     }
 
-    private void deleteHistoryInRedis(HistoryRequestDto requestDto) {
+    private void deleteHistoryFromRedis(HistoryRequestDto requestDto) {
         String redisId = getRedisId(requestDto);
         hashOperations.keys(redisId).forEach(k -> hashOperations.delete(redisId, k));
     }
@@ -107,27 +114,22 @@ public class CollectorService {
     private void saveHistoryToMainDB(HistoryRequestDto requestDto) {
         User currentUser = userRepository.findByName(currentUserName)
                 .orElseThrow(() -> new IllegalArgumentException("User Not Founded!"));
-        String redisId = getRedisId(requestDto);
 
         List<History> historyList = currentUser.getHistoryList().stream()
-                .filter( h -> h.getKeyword().equals(getCurrentKeyword(redisId)))
+                .filter( h -> h.getKeyword().equals(getCurrentKeyword(getRedisId(requestDto))))
                 .collect(Collectors.toList());
 
         if (historyList.size() == 1) {
-            logger.warn("exist history in mongodb");
             History previousHistory  = historyList.get(0);
-            History updatedHistory = updateUrlInMainDB(previousHistory, redisId);
-
+            History updatedHistory = updateUrlInMainDB(previousHistory,  getRedisId(requestDto));
             historyRepository.save(updatedHistory);
-            userRepository.save(currentUser);
         } else {
-            logger.warn("new history in mongodb");
-            History newHistory = saveNewUrlInMainDB(redisId);
-            currentUser.addHistory(newHistory);
-
+            History newHistory = saveNewUrlInMainDB(getRedisId(requestDto));
             historyRepository.save(newHistory);
-            userRepository.save(currentUser);
+
+            currentUser.addHistory(newHistory);
         }
+        userRepository.save(currentUser);
     }
 
     private History saveNewUrlInMainDB(String redisId) {
@@ -170,7 +172,7 @@ public class CollectorService {
                                             .map(TabUrl::getKeyword).orElseThrow(() -> new IllegalArgumentException("Can't Know Keyword. It's Discard..."));
     }
 
-    private boolean isNewKeywordTrigger(HistoryRequestDto requestDto) {
+    private boolean isNewKeyword(HistoryRequestDto requestDto) {
         return hashOperations.entries(getRedisId(requestDto)).size() > 0;
     }
 
@@ -211,14 +213,13 @@ public class CollectorService {
     }
 
     private String parseKeyword(String title) {
-        String keyword = "";
         if (isGoogleSearchForm(title)) {
-            keyword = parseTitleinGoole(title);
+            return parseTitleinGoole(title);
         }
         else if(isNaverSearchForm(title)) {
-            keyword =  parseTitleInNaver(title);
-        }
-        return keyword;
+            return parseTitleInNaver(title);
+        } else
+            throw new IllegalArgumentException("Can't Parsed!");
     }
 
     private String parseTitleInNaver(String title) {
