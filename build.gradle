@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.2.5.RELEASE'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'java'
+    id 'com.google.cloud.tools.jib' version '2.1.0'
 }
 
 group = 'com.memento'
@@ -16,6 +17,12 @@ configurations {
 
 repositories {
     mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', "Hoxton.SR1")
+    set('gcr',"asia.gcr.io")
+    set('projectName',"sphong-kuber")
 }
 
 dependencies {
@@ -39,4 +46,11 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+//build docker image
+jib {
+    to {
+        image = "${gcr}/${projectName}/" + "${bootJar.baseName}:${bootJar.version}"
+    }
 }

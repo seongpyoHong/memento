@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: memento
+  name: memento
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: memento
+  template:
+    metadata:
+      labels:
+        app: memento
+    spec:
+      imagePullSecrets:
+        - name: gcr-json-key
+      containers:
+        - name : memento
+          image: asia.gcr.io/sphong-kuber/memento
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 180
+            successThreshold: 1
+            timeoutSeconds: 30
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 30
+          securityContext:
+            privileged: false

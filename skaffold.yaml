@@ -1,0 +1,17 @@
+apiVersion: skaffold/v2alpha4
+kind: Config
+# Enforce SKaffold to use Jib
+build:
+  artifacts:
+    - image: asia.gcr.io/sphong-kuber/memento
+      context: .
+      jib : {}
+      sync:
+        manual:
+          - src : 'memento/src/**/*.java'
+            dest : .
+  # Execute deployment.yml
+deploy:
+  kubectl:
+    manifests:
+      - k8s/**/*.yaml

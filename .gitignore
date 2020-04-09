@@ -33,3 +33,8 @@ out/
 
 extension/images/
 images/
+
+### Terraform ###
+**/variable.tf
+**/*.tfstate*
+**/.terraform/
