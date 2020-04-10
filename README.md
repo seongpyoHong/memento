@@ -19,6 +19,7 @@ If you search something in google search form. The **Memento** Chrome extension 
 
 ### Prerequisites
 
+##### Backend
 - Java 1.8+
 - Spring Boot 2.2.5 +
 - Gradle 6.0.1 +
@@ -26,22 +27,58 @@ If you search something in google search form. The **Memento** Chrome extension 
 - Spring Data Redis
 - Mustache
 
-#### Run Server
+##### Infrastructure
+- Kubernetes
+- Terraform
+- Skaffold
 
-- Configuration for DB with docker (Mongo DB, Redis)
+### Run Server
+#### Local
 
-  ```
-  docker-compose up -d
-  ```
+1. Configuration for DB with docker (Mongo DB, Redis)
+    ```
+    > docker-compose up -d
+    ```
+2. Run Spring Boot Application
+    ```
+    > gradle bootRun
+    ```
 
-- Run 
+#### GKE
+1. Settings for GKE with Terraform
+    ```asp
+    > cd terraform
+    > terraform plan
+    > terraform apply
+    ```
 
-  ```
-  gradle bootRun
-  ```
+2. Deploy to GKE with Skaffold
+    ```asp
+    > skaffold dev
+    ```
+
+3. Check external IP
+    ```
+    > kubectl get ingress
+    NAME HOSTS ADDRESS PORTS AGE
+    ingress * <external-ip> 8080 10m
+    ```
+
+4. Change host to external IP in `extension.js`
 
 
-
+**If you need to static IP, following below.**
+   1. Issue static IP
+        ```asp
+        > gcloud compute addresses create memento-static-ip --global
+        ```
+  
+   2. Assign to ingress.yaml
+        ```
+        annotations:
+             kubernetes.io/ingress.global-static-ip-name: "memento-static-ip"
+        ```
+  
 ### How to use?
 
 The application is the Chrome Extension to track browsing history using Google Chrome. It has the following services :
@@ -56,7 +93,7 @@ The application is the Chrome Extension to track browsing history using Google C
 ![](./readmeimg/Description3.png)
 ![](./readmeimg/Description4.png)
 
-### Archeitecture (To - do)
+### Archeitecture
 
 ![](./readmeimg/Archeitecture.png)
 
