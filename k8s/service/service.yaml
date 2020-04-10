@@ -35,22 +35,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-slave
-  labels:
-    app: redis
-    role: slave
-    tier: backend
-spec:
-  ports:
-    - port: 6379
-  selector:
-    app: redis
-    role: slave
-    tier: backend
----
-apiVersion: v1
-kind: Service
-metadata:
   name: mongo
   labels:
     name: mongo

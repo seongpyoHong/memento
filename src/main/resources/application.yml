@@ -1,7 +1,7 @@
 spring:
   data:
     mongodb:
-      host: mongo-0
+      host: mongo
       port: 27017
       authentication-database: admin
       database: mementoDB
@@ -19,6 +19,6 @@ spring:
 
 logging:
   level:
-    root: WARN
+    root: INFO
     org.springframework.data.mongodb.repository.Query: DEBUG
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG

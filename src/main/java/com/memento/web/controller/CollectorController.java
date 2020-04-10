@@ -27,4 +27,9 @@ public class CollectorController {
     public void collectHistory(@RequestBody HistoryRequestDto historyRequestDto, @RequestParam("name") String name) {
         collectorService.saveHistory(historyRequestDto, name);
     }
+
+    @GetMapping("/")
+    public String connectTest() {
+        return "Connect Success!";
+    }
 }
